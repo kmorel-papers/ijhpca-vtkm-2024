@@ -9,4 +9,5 @@ message("${sections}")
 
 add_latex_document(IJHPCASpecialIssue_VTKm.tex
   INPUTS ${sections}
+  BIBFILES IJHPCASpecialIssue_VTKm.bib
   )
