@@ -1,7 +1,7 @@
 \section{Introduction}
 
 The Exascale Computing Project (ECP) brought high-performance computing to the next milestone of capacity computing.
-Although the goal was nominally to stand up computers capable of a billion billion (1018) floating point operations per second, the advancement required a revolution on hardware and software to achieve this goal.
+Although the goal was nominally to stand up computers capable of a billion billion ($10^{18}$) floating point operations per second, the advancement required a revolution on hardware and software to achieve this goal.
 Pivotal to this advancement is the adoption of GPU processors from a variety of vendors as the primary computing engine.
 These GPUs provide an unmatched computational throughput for the power they consume at the cost of greater code complexity.
 
@@ -14,4 +14,8 @@ ECP provided the investment to promote VTK-m to production software that now ser
 VTK-m is currently used by ParaView, VisIt, and Ascent to execute visualization algorithms on Exascale platforms and others using GPU processing.
 
 This paper provides an overview of the main challenges encountered to make visualization available at the Exascale.
+We start with a brief overview of the VTK-m framework.
+We then discuss the largest porting challenges we encountered during ECP as the hardware for the final Exascale machines differed dramatically from the pre-Exascale machines.
+This is followed by a summary of the performance of VTK-m on the Exascale hardware.
+Finally, we discuss the software engineering required to integrate VTK-m into usable visualization tools and successes with using VTK-m to solve problems in real science applications.
 This includes porting challenges, performance testing and improvement, integration with other ECP software technologies, and the support of ECP applications.
