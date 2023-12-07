@@ -4,4 +4,9 @@ project(IJHPCASpecialIssue_VTKm NONE)
 
 include(UseLATEX.cmake)
 
-add_latex_document(IJHPCASpecialIssue_VTKm.tex)
+file(GLOB sections RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" CONFIGURE_DEPENDS sections/*.tex)
+message("${sections}")
+
+add_latex_document(IJHPCASpecialIssue_VTKm.tex
+  INPUTS ${sections}
+  )

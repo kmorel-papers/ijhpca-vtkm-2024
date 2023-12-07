@@ -1,0 +1,17 @@
+\section{Introduction}
+
+The Exascale Computing Project (ECP) brought high-performance computing to the next milestone of capacity computing.
+Although the goal was nominally to stand up computers capable of a billion billion (1018) floating point operations per second, the advancement required a revolution on hardware and software to achieve this goal.
+Pivotal to this advancement is the adoption of GPU processors from a variety of vendors as the primary computing engine.
+These GPUs provide an unmatched computational throughput for the power they consume at the cost of greater code complexity.
+
+As scientific simulations consume more computation, they produce more data.
+To understand data and promote discovery, these data must be analyzed and visualized, a high-performance task onto itself.
+VTK-m is the software library that makes this possible by implementing classic scientific visualization algorithms redesigned for heavily threaded environments like GPUs.
+VTK-m also provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
+At the inception of ECP, VTK-m was the byproduct of a research project.
+ECP provided the investment to promote VTK-m to production software that now serves as the underlying visualization implementation across all ECP.
+VTK-m is currently used by ParaView, VisIt, and Ascent to execute visualization algorithms on Exascale platforms and others using GPU processing.
+
+This paper provides an overview of the main challenges encountered to make visualization available at the Exascale.
+This includes porting challenges, performance testing and improvement, integration with other ECP software technologies, and the support of ECP applications.
