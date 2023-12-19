@@ -1,5 +1,20 @@
 \section{Integration into Visualization Tools}
 
+Throughout the lifespan of ECP, the VTK-m team operated in heavy collaboration with other ECP software technology teams.
+The scope of the VTK-m portion of the project was to provide the fundamental technology to run scientific visualization algorithms on the GPU processors of the Exascale machines.
+Other ECP teams, most notably the ALPINE project, developed tools that would leverage VTK-m while directly addressing application needs.
+This arrangement avoided the redundant work of multiple teams developing their own visualization solutions and prevented users from having to use yet another software interface.
+In this section we discuss the major visualization tools we integrated VTK-m with.
+
+\ken{
+  Each subsection should be roughly 1/2 page plus have an image demonstrating the tool with VTK-m that is about 1/3 page.
+  (3 + 1/3 page total.)
+  The subsection should start with a description of the tool.
+  (Exception: the last subsection starts with a description of the lengthy process from committing code in VTK-m to it being available in a tool.)
+  The following paragraphs describe how VTK-m is integrated at a high level.
+  Avoid details like classnames.
+}
+
 \subsection{ParaView}
 
 \assign{Sujin}
@@ -11,3 +26,12 @@
 \subsection{Ascent}
 
 \assign{Nicole}
+
+\subsection{Alternate Delivery Mechanisms}
+
+\assign{Tushar}
+
+\ken{
+  Talk about how you can deliver new functionality to these tools outside of the pipeline of implement in VTK-m $\rightarrow$ VTK $\rightarrow$ Tool.
+  Use uncertainty plugin as an example of doing this.
+}

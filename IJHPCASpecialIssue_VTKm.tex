@@ -28,7 +28,8 @@
 \definecolor{authorm}{RGB}{138, 56, 0}
 \definecolor{authorn}{RGB}{166, 110, 255}
 
-\newcommand*{\authorcomment}[3][Crimson]{\textcolor{#1}{\textbf{\emph{#3}} (#2)}}
+\newcommand*{\authorcomment}[3][Crimson]{\textcolor{#1}{\textbf{\emph{#3}} \mbox{-- #2}}}
+%\newcommand*{\authorcomment}[3][--]{}
 \newcommand*{\ken}[1]{\authorcomment[authora]{Ken}{#1}}
 \newcommand*{\vicente}[1]{\authorcomment[authorb]{Vicente}{#1}}
 \newcommand*{\markb}[1]{\authorcomment[authorc]{Mark}{#1}}
@@ -41,15 +42,19 @@
 \newcommand*{\abhi}[1]{\authorcomment[authorj]{Abhi}{#1}}
 \newcommand*{\eric}[1]{\authorcomment[authork]{Eric}{#1}}
 \newcommand*{\nicole}[1]{\authorcomment[authorl]{Nicole}{#1}}
+\newcommand*{\axel}[1]{\authorcomment[authorm]{Axel}{#1}}
+\newcommand*{\jay}[1]{\authorcomment[authorn]{Jay}{#1}}
+\newcommand*{\tushar}[1]{\authorcomment[authork]{Tushar}{#1}}
 
 \begin{document}
 
-\runninghead{Moreland, Bolea, Bolstad, Childs, Huebl, Lo, Geveci, Marsaglia, Philip, Pugmire, Rizzi, and Yenpure}
+\runninghead{Moreland et al.}
 
 \title{Visualization at the Exascale: Making it all Work with VTK-m}
 
 \author{%
   Kenneth~Moreland,\affilnum{1}
+  Tushar~Athawale,\affilnum{1}
   Vicente~Bolea,\affilnum{2}
   Mark~Bolstad,\affilnum{3}
   Eric~Brugger,
@@ -60,7 +65,8 @@
   Nicole~Marsaglia,\affilnum{7}
   Sujin~Philip,\affilnum{2}
   David~Pugmire,\affilnum{1}
-  Silvio~Rizzi,\affilnum{8} and
+  Silvio~Rizzi,\affilnum{8}
+  Zhe~Wang,\affilnum{1} and
   Abhishek~Yenpure\affilnum{2}
 }
 
@@ -86,6 +92,7 @@
 \email{morelandkd@ornl.gov}
 
 \begin{abstract}
+  \assign{Hank, make an editing pass}
   VTK-m is the software library that makes it possible to perform scientific visualization on Exascale machines.
   Exascale machines use GPUs as accelerator processors provide the highest computational throughput available today, which necessitates an algorithmic design that often deviates from algorithms on a classical computer.
   In addition to providing scientific visualization algorithms for GPUs and other accelerator processors, VTK-m provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
@@ -97,14 +104,14 @@
   \ken{\url{https://drive.google.com/drive/folders/19xAWuQSQQb9uRAfHlGfhI1N4bcXYiRNk} $\leftarrow$ information about the IJHPCA special issue}
 \end{abstract}
 
-\keywords{visualization, exascale, VTK-m, parallel}
+\keywords{visualization, exascale, VTK-m, parallel, ECP}
 
 \maketitle
 
 \input{sections/introduction.tex}
 \input{sections/overview.tex}
 \input{sections/porting.tex}
-\input{sections/performance.tex}
+\input{sections/operation.tex}
 \input{sections/integration.tex}
 \input{sections/applications.tex}
 \input{sections/conclusion.tex}
