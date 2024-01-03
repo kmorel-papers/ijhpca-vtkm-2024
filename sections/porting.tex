@@ -29,4 +29,12 @@ Maybe combine with previous section.
 
 \subsection{GPU-to-GPU Transfers}
 
-\assign{Vicente}
+Modern HPC GPUs allow direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to directly send data stored in their device memory to the target GPU device memory. This contrasts with the traditional and costly GPU communication pattern which consists in first copying the desired data from the device memory to host memory, transferring it, and then again copying the received data from host memory to device memory.
+
+Enabling this feature in VTK-m required changes in the source code of both \begin{enumerate*} [label=\itshape(\alph*\upshape)]\item VTK-m and \item DIY\end{enumerate*}. The reason for making changes to DIY is that VTK-m delegates data marshaling and remote communication through the DIY library.
+
+\textit{(a)} DIY library source code changes consisted in adding routines that allow sending and receiving raw pointers directly encapsulated in a newly introduced Blob data type. This contrasts with the regular operation of DIY that copies and serializes data before sending and receiving. In addition to that, we have also introduced a new API in DIY which controls the ownership of the passed raw pointer.
+
+\textit{(b)} VTK-m source code changes consisted in changes to the VTK-m Buffer class and  adding a new CMake option named \texttt{VTKm\_ENABLE\_GPU\_MPI} which activates direct GPU-to-GPU communication of VTK-m Buffer objects. This in turn, enables direct GPU communication in VTK-m since most of the VTK-m storage entities are composed of VTK-m Buffers. 
+
+The main challenge found during the implementation of this feature was maintaining compatibility with the target systems, OLCF Frontier. The challenged consisted in the fact that the software stack in the target system was a moving target with frequent updates that in many cases required us to tune build and runtime parameters and, in some other cases, perform changes to the VTK-m and DIY source code. This challenge was minimized by provisioning the VTK-m Gitlab project with nightly jobs that build and run tests that use this feature in the OLCF Frontier test-bed system (OLCF Crusher). 

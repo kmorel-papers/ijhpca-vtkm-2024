@@ -18,14 +18,35 @@
 
 (WDMApp/CS Chang/Poincar\'{e})
 
-\subsection{Laser Wakefields}
+\subsection{Laser Wakefield Acceleration}
 
 \assign{Axel, Abhi}
 
-(WarpX)
+%\defcitealias{FedeliHuebl2022}{Fedeli, Huebl et al. (2022)}
+%\citepalias{FedeliHuebl2022}
+
+(WarpX) \cite{FedeliHuebl2022}
+
+Ascent in situ images.
+
+Custom particle advection algorithm in VTK-m: ...
 
 \subsection{Impact Beyond ECP}
 
 \assign{Jay}
 
-\jay{discuss the applications/use cases outside of ECP}
+%\jay{discuss the applications/use cases outside of ECP}
+In addition to the applications mentioned above, VTK-m still serves as the key infrastructure for accelerating data analysis and visualization in various scientific applications through \emph{in situ} approach. This subsection lists several typical examples and illustrates how VTK-m is integrated into \emph{in situ} scientific workflows outside of ECP.
+
+
+Before being selected as a project in ECP, VTK-m was a core component in Visualization for the Extreme-Scale Scientific Computation Ecosystem (XVis)~\cite{osti1547341}. 
+XVis focused on multiple ways to integrate \emph{in situ} visualization with the simulation, extract key information, and decrease the data size for post-hoc processing.
+The ``\emph{in situ} reduction + post hoc'' paradigm is widely adopted in multiple scientific domains, such as probability distribution functions (PDF) extraction of fields in combustion simulation~\cite{7874311}, and binning mechanism to reduce the data size of fusion simulation~\cite{KressCKCCP18}. 
+
+
+Nyx is a cosmological simulation that aims to solve compressible hydrodynamics with N-body treatment of the dark matter. Each simulation run may contain hundreds of time steps with multiple sets of simulation input parameters. The raw data size is usually hundreds of TBs to several PBs, which causes challenges to process data in post-processing. 
+VTK-m is used as \emph{in situ} analysis to extract the statistical properties of the down-sampled data to hugely reduce the size of raw data. The associated statistics model can be used to construct the data based on prior knowledge in post-processing with low data reconstruction error~\cite{wang2019statistical}.
+
+Eddy detection and tracking plays a key role in the ocean simulation field. Understanding the characteristics of eddies can help scientists to explain the regional air-sea interactions.
+VTK-m streamline filter can be used as an \emph{in situ} analysis to generate streamline data used for interactive post-hoc analysis~\cite{han2022narrative}. With the help of VTK-m, the associated eddy analysis workflow can improve the interaction speed, reduce data storage, and meet the
+needs of real-time visual analysis interaction.  
