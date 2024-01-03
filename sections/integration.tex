@@ -34,7 +34,13 @@ Integrating VTK-m filter into visualization software, e.g., ParaView, and VisIt,
 
 Our ultimate goal is to make VTK-m filters practical for real use and to put tools in the hands of end users in a timely manner. One of the benefits that VTK-m offers is the easy exportation of VTK-m filters as plugins, which circumvents the tedious software integration process and makes VTK-m filters usable in ParaView and VisIt. For the plugin approach, the VTK-m filter still needs to be wrapped inside a VTK filter, but the time needed for the software integration and testing in VTK and ParaView can be bypassed.       
 
-Figure illustrates the VTK-m isosurface uncertainty filter made available in ParaView using the plugin method. The isosurface uncertainty filter is one of the major successes of the VTK-m library~\cite{wang2023funmc}, as it enables the interactive exploration of positional uncertainty in isosurfaces and overcomes difficulties related to the slowness of uncertainty computations. \tushar{Should we add here a link to the uncertainty filter in the master branch and add Nrushad as author?} 
+\begin{figure}[htb]
+  \includegraphics[width=\linewidth]{figures/isosurfaceUncertaintyPlugin.png}
+  \caption{Integration of the VTK-m isosurface uncertainty filter into ParaView using the plugin approach.\tushar{TODO: Replace with higher-resolution image.}}
+  \label{fig:uncertainty-plugin}
+\end{figure}
+
+Figure~\ref{fig:uncertainty-plugin} illustrates the VTK-m isosurface uncertainty filter made available in ParaView using the plugin method. The isosurface uncertainty filter~\cite{wang2023funmc} is one of the major successes of the VTK-m library, as it enables the interactive exploration of positional uncertainty in isosurfaces and overcomes difficulties related to the slowness of uncertainty computations. \tushar{Should we add here a link to the uncertainty filter in the master branch and add Nrushad as author?}. Using the plugin method depicted in Figure~\ref{fig:uncertainty-plugin}, VTK-m filters can be easily coupled with existing filters in ParaView for faster and better data understanding.
 
 \ken{
   Talk about how you can deliver new functionality to these tools outside of the pipeline of implement in VTK-m $\rightarrow$ VTK $\rightarrow$ Tool.
