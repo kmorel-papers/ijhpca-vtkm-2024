@@ -32,39 +32,36 @@ journal = {The Astrophysical Journal}
   organization={IEEE}
 }
 
-@inproceedings{li2017achieving,
-  title={Achieving Portable Performance For Wavelet Compression Using Data Parallel Primitives.},
-  author={Li, Shaomeng and Marsaglia, Nicole and Chen, Vincent and Sewell, Christopher M and Clyne, John P and Childs, Hank},
-  booktitle={EGPGV@ EuroVis},
-  pages={73--81},
-  year={2017}
+@InProceedings{Li2017,
+  author    = {Shaomeng Li and Nicole Marsaglia and Vincent Chen and Christopher M Sewell and John P Clyne and Hank Childs},
+  booktitle = {Proceedings of EuroGraphics Symposium on Parallel Graphics and Visualization (EGPGV)},
+  title     = {Achieving Portable Performance For Wavelet Compression Using Data Parallel Primitives},
+  year      = {2017},
+  month     = jun,
+  pages     = {73--81},
+  doi       = {10.2312/pgv.20171095},
 }
 
-@techreport{wang2023funmc,
-  title={FunMC\^{} 2: A Filter for Uncertainty Visualization of Marching Cubes on Multi-Core Devices},
-  author={Wang, Jay and Athawale, Tushar and Moreland, Ken and Chen, Jieyang and Johnson, Chris and Pugmire, Dave},
-  year={2023},
-  institution={Oak Ridge National Laboratory (ORNL), Oak Ridge, TN (United States)}
+@Article{Carr2021,
+  author  = {Hamish A Carr and Oliver R{\"u}bel and Gunther H Weber and James P Ahrens},
+  journal = {IEEE Transactions on Visualization and Computer Graphics},
+  title   = {Optimization and Augmentation for Data Parallel Contour Trees},
+  year    = {2021},
+  month   = oct,
+  number  = {10},
+  pages   = {3471--3485},
+  volume  = {28},
+  doi     = {10.1109/TVCG.2021.3064385},
 }
 
-@article{carr2021optimization,
-  title={Optimization and augmentation for data parallel contour trees},
-  author={Carr, Hamish A and R{\"u}bel, Oliver and Weber, Gunther H and Ahrens, James P},
-  journal={IEEE transactions on visualization and computer graphics},
-  volume={28},
-  number={10},
-  pages={3471--3485},
-  year={2021},
-  publisher={IEEE}
-}
-
-@inproceedings{sane2021investigating,
-  title={Investigating in situ reduction via lagrangian representations for cosmology and seismology applications},
-  author={Sane, Sudhanshu and Johnson, Chris R and Childs, Hank},
-  booktitle={International Conference on Computational Science},
-  pages={436--450},
-  year={2021},
-  organization={Springer}
+@InProceedings{Sane2021:ICCS,
+  author       = {Sane, Sudhanshu and Johnson, Chris R and Childs, Hank},
+  booktitle    = {International Conference on Computational Science},
+  title        = {Investigating in situ reduction via lagrangian representations for cosmology and seismology applications},
+  year         = {2021},
+  organization = {Springer},
+  pages        = {436--450},
+  doi          = {10.1007/978-3-030-77961-0_36},
 }
 
 @article{han2022narrative,
@@ -78,13 +75,14 @@ journal = {The Astrophysical Journal}
   publisher={IEEE}
 }
 
-@inproceedings{wang2019statistical,
-  title={Statistical super resolution for data analysis and visualization of large scale cosmological simulations},
-  author={Wang, Ko-Chih and Xu, Jiayi and Woodring, Jonathan and Shen, Han-Wei},
-  booktitle={2019 IEEE Pacific Visualization Symposium (PacificVis)},
-  pages={303--312},
-  year={2019},
-  organization={IEEE}
+@InProceedings{Wang2019,
+  author    = {Ko-Chih Wang and Jiayi Xu and Jonathan Woodring and Han-Wei Shen},
+  booktitle = {IEEE Pacific Visualization Symposium (PacificVis)},
+  title     = {Statistical Super Resolution for Data Analysis and Visualization of Large Scale Cosmological Simulations},
+  year      = {2019},
+  month     = apr,
+  pages     = {303--312},
+  doi       = {10.1109/PacificVis.2019.00043},
 }
 
 @INPROCEEDINGS{7874311,
@@ -215,6 +213,44 @@ month = {8}
   year      = {2012},
   pages     = {21--30},
   doi       = {10.2312/EGPGV/EGPGV12/021-030},
+}
+
+@InProceedings{Sane2021:EGPGV,
+  author    = {Sane, Sudhanshu and Yenpure, Abhishek and Bujack, Roxana and Larsen, Matthew and Moreland, Kenneth and Garth, Christoph and Johnson, Chris R. and Childs, Hank},
+  booktitle = {Eurographics Symposium on Parallel Graphics and Visualization (EGPGV)},
+  title     = {Scalable In Situ Computation of Lagrangian Representations via Local Flow Maps},
+  year      = {2021},
+  month     = jun,
+  doi       = {10.2312/pgv.20211040},
+}
+
+@InProceedings{Yenpure2019,
+  author    = {Abhishek Yenpure and Hank Childs and Kenneth Moreland},
+  booktitle = {Eurographics Symposium on Parallel Graphics and Visualization (EGPGV)},
+  title     = {Efficient Point Merging Using Data Parallel Techniques},
+  year      = {2019},
+  month     = jun,
+  doi       = {10.2312/pgv.20191112},
+}
+
+@InProceedings{Lessley2017,
+  author    = {Brenton Lessley and Kenneth Moreland and Matthew Larsen and Hank Childs},
+  booktitle = {IEEE Symposium on Large Data Analysis and Visualization (LDAV)},
+  title     = {Techniques for Data-Parallel Searching for Duplicate Elements},
+  year      = {2017},
+  month     = oct,
+  abstract  = {We study effective shared-memory, data-parallel techniques for searching for duplicate elements. We consider several data-parallel approaches, and how hash function, machine architecture, and data set can affect performance. We conclude that most choices of algorithm and hash function are problematic for general usage. However, we demonstrate that the choice of the Hash-Fight algorithm with the FNV1a hash function has consistently good performance over all configurations.},
+  comment   = {Compares the performance of identifying and extracting external faces in a mesh by using hash fighting versus sorting indices of the mesh in VTK-m. Hash fighting is almost always a top performer.},
+  doi       = {10.1109/LDAV.2017.8231845},
+}
+
+@InProceedings{Wang2023,
+  author    = {Zhe Wang and Tushar M. Athawale and Kenneth Moreland and Jieyang Chen and Chris R. Johnson and David Pugmire},
+  booktitle = {Eurographics Symposium on Parallel Graphics and Visualization (EGPGV)},
+  title     = {{FunMC$^2$}: A Filter for Uncertainty Visualization of Marching Cubes on Multi-Core Devices},
+  year      = {2023},
+  month     = may,
+  doi       = {10.2312/pgv.20231081},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}
