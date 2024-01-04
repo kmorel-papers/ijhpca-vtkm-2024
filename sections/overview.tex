@@ -25,7 +25,7 @@ VTK-m also internally provides a framework that simplifies the implementation of
 The basic structure of the framework is shown in Figure~\ref{fig:vtkm-framework}.
 Code in VTK-m is separated into two separate environments: control and execution.
 These correspond to the ``host'' and ``device,'' respectively, in a GPU development environment.
-That said, the logical control and execution environments are maintained even when there is not a clear separation between host and device, which is the case for some accelerators such as the Xeon Phi \ken{cite?}.
+That said, the logical control and execution environments are maintained even when there is not a clear separation between host and device, which is the case for some accelerators such as the Xeon Phi \cite{Jeffers2016}.
 
 Mesh structures are definined using a flexible data model \cite{Meredith2012} in the control environment.
 Based on the structure, the data are divided in small pieces, and the pieces are processed in parallel in the execution environment.
