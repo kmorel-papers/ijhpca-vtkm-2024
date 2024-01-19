@@ -19,7 +19,40 @@ This section reports the most major modifications of VTK-m to make it feasible t
 
 \assign{Ken}
 
-Part of it is Variant class.
+Ideally, an algorithm
+%that operates on arrays
+will know the data types that it will operate on.
+Unfortunately, this is seldom the case for VTK-m where data ingested from different sources can have any number of basic types
+%(32- or 64-bit floats or fixed precision values encoded in integers)
+and different types of memory layout.
+In the early years of ECP, this problem was addressed by compiling algorithms in VTK-m for all possible types that could be encountered.
+However, the amount of potential cases generated is too large to be practical.
+C++ objects with virtual methods are a natural solution to this problem, and as they became available on CUDA devices, VTK-m started using virtual methods to hide the structure of arrays.
+However, this solution worked poorly and was later abandoned for two reasons.
+First, using virtual methods introduced problems with library linking as the compilers had to collect any possible code that might be needed to be loaded on the device.
+Second, when ECP announced that its Exascale machines would be using GPUs other than CUDA, it was unclear how well they would support virtual methods or even if they would be supported at all.
+
+Consequently, the VTK-m development team pivoted.
+Virtual methods were removed from the VTK-m code that ran on devices.
+To manage the operations on types without using virtual methods, VTK-m employed a trio of strategies: multiplexing the type in the algorithm, generalizing the stride in arrays, and providing fallbacks when unexpected types were encountered.
+
+The first strategy, multiplexing, required the use of a type agnostic storage object.
+For this, a \texttt{Variant} class was added to VTK-m.
+The \texttt{Variant} takes a list of types as template parameters, and it can hold exactly one of these objects at a time.
+At runtime, the proper type can be queried and extracted.
+%Implementing the \texttt{Variant} to avoid type punning across all device compilers was challenging.
+Although multiplexing from a variant object still requires separate compilation for all possible types, it limits the code that must be recompiled to make it more manageable.
+
+The second strategy required a redesign of the array management in VTK-m.
+Where the original design of array management completely abstracted the implementation, the new design based array management on known buffers of memory.
+This in turn provided a way to generalize the representation of an array component by defining a stride in the buffer.
+In this way, an algorithm no longer had to be compiled for a specific data layout.
+It could instead apply a stride to the array and use any layout.
+
+The third strategy recognized that although a great number of types are possible, many are rarely if ever encountered in practice.
+Therefore, instead of attempting to compile a function for any possible type, it is possible to instead compile for the most likely types and then have a fallback for the cases when the type is unexpected.
+The typical solution is to copy the array of unknown type to an array of a known type.
+This feature was included into the filter interface overhaul, which is described in the next section.
 
 \subsection{Filter Interface Overhaul}
 
