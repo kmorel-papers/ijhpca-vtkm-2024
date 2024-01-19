@@ -25,9 +25,19 @@
 %\defcitealias{FedeliHuebl2022}{Fedeli, Huebl et al. (2022)}
 %\citepalias{FedeliHuebl2022}
 
-(WarpX) \cite{FedeliHuebl2022}
+WarpX is a new particle-in-cell simulation code developed as part of ECP, which was awarded the 2022 ACM Gordon Bell Prize~\cite{FedeliHuebl2022}.
+Science case ...3
 
-Ascent in situ images.
+WarpX coarse parallelization relies on block-structured domain-decomposition with MPI using the AMReX library~\cite{} and compute acceleration with CUDA/HIP/SYCL or OpenMP, so that simulations are scalable to the world's largest supercomputers.
+
+If WarpX would rely on traditional post-processing workflows alone for visualization of the dynamics of Exascale simulations, the resulting multi-PByte scale output would severely limit the available snapshots or level of detail to visualize.
+Consequently, integrations with ...
+
+\begin{figure}[htb]
+  \includegraphics[width=\linewidth]{figures/warpx_stages_lwfa.png}
+  \caption{WarpX in situ visualization on 552 Frontier GPUs using Ascent and VTK-m.}
+  \label{fig:warpx_lwfa}
+\end{figure}
 
 Custom particle advection algorithm in VTK-m: ...
 
