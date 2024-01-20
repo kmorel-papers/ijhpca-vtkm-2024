@@ -18,7 +18,7 @@
 
 (WDMApp/CS Chang/Poincar\'{e})
 
-\subsection{Laser Wakefield Acceleration}
+\subsection{Laser Wakefield Acceleration}\label{sec:warpx}
 
 \assign{Axel, Abhi}
 
@@ -26,34 +26,45 @@
 %\citepalias{FedeliHuebl2022}
 
 WarpX is a new particle-in-cell simulation code developed as part of ECP, which was awarded the 2022 ACM Gordon Bell Prize~\cite{FedeliHuebl2022}.
-Science case ...
+In ECP, WarpX was developed as a fully new code succeeding its predecessor Warp~\cite{Vay2013}, with the goal to study advanced particle acceleration using in laser-driven plasma wakefields, towards future high-energy physics colliders.
 
+Figure~\ref{fig:warpx_lwfa} is an in situ rendering of a \text{staged} laser wakefield accelerator in a boosted reference frame~\cite{Vay2011}.
+In the staging approach, a particle beam is accelerated subsequently through multiple plasma elements.
+In each stage, an ultra-intense laser pulse is exciting a plasma wakefield.
+This depletes the laser pulse's energy to generate very strong electric fields in the plasma wake, which can be used to accelerate an injected electron beam.
+The acceleration itself can be three to four orders of magnitude more compact than staging state-of-the-art radio-frequency accelerator elements.
+Besides increased beam energy, physicists study how to preserve beam properties essential for transport, focusing (e.g., emittance) and applications (e.g., charge and current).
+
+Shown in figure~\ref{fig:warpx_lwfa} are the strong traversal focusing fields (red-blue) in the plasma stages (gray).
+An electron beam (orange-green) is accelerated to the right through multiple stages to high energies.
+% Mentioned in Ascent section:
+% The scene combines volume rendering (plasma stage), isocontours (focusing fields) and particle glyphs (accelerated beam).
+
+WarpX features advanced techniques such as GPU-acceleration for three vendors, mesh-refinement capabilities, dynamic load balancing, and unique advanced numerical solvers.
 WarpX relies on multi-level parallelization: coarse parallelization relies on block-structured domain-decomposition with MPI using the AMReX library~\cite{Zhang2019} and compute acceleration with CUDA/HIP/SYCL or OpenMP, so that simulations are scalable to the world's largest supercomputers.
 
-If WarpX would rely on traditional post-processing workflows alone for visualization of the dynamics of Exascale simulations, the resulting multi-PByte scale output would severely limit the available snapshots or level of detail to visualize.
-Consequently, integrations with ...
-
-\begin{figure}[htb]
-  \includegraphics[width=\linewidth]{figures/warpx_stages_lwfa.png}
-  \caption{WarpX in situ visualization of laser-wakefield accelerator in a boosted reference frame on 552 Frontier GPUs using Ascent and VTK-m.}
-  \label{fig:warpx_lwfa}
-\end{figure}
-\axel{Checking w/ Nicole on Figure~\ref{fig:warpx_lwfa}: we have the same sim but about 8x larger, too.}
-
-Figure~\ref{fig:warpx_lwfa} ...
-The scene combines volume rendering (plasma stage), isocontours (focusing fields) and particle glyphs (accelerated beam).
-
-Custom particle advection algorithm in VTK-m: ...
-Figure~\ref{fig:lwfa_particle_advection} ...
+If WarpX would only rely on traditional post-processing workflows for visualization of the dynamics of Exascale simulations, the resulting multi-PByte scale output per simulation would severely limit the available snapshots and/or level of detail to visualize.
+Addressing this need, its situ visualization interfaces to Ascent, for which utility routines were implemented in AMReX, which are specialized in WarpX ``diagnostics'' for application-specific descriptions.
+WarpX performs data preparation steps for diagnostics in situ and shares the respective AMReX memory buffers with zero-copy APIs through Conduit with Ascent, rendering with VTK-m in the same domain-decomposition and on the same compute device as the simulation itself.
 
 \begin{figure*}[ht]
   \centering
   \includegraphics[width=0.49\linewidth]{figures/lwfa_particle_advection_front.png}%
   \includegraphics[width=0.49\linewidth]{figures/lwfa_particle_advection_side.png}
-  \caption{Side- \& front-view of an LWFA with injected electron bunch.
-  Particles are advected from \emph{a single snapshot} of the simulation.}
+  \caption{Side- \& front-view of an laser wakefield with an injected electron bunch.
+  Particles are advected from \emph{a single snapshot} of the simulation in VTK-m.}
   \label{fig:lwfa_particle_advection}
 \end{figure*}
+
+Realistic visualization of particle trajectories (advection) in a plasma or particle accelerator requires high temporal fidelity in traditional workflows.
+With VTK-m, an opportunity to significantly reduce data input for such workflows was identified, making use of a physics-motivated advection algorithm and the slowly changing nature of fields in a wakefield accelerator.
+
+Plasma particles such as electrons and ion are inert and can be relativistic, which effectively changes their mass as they move.
+Traditional advection algorithms only made use of local properties of fields, without a history and inert nature of a streamline.
+As in a particle-in-cell algorithm, the realistic track of a charged plasma particle can be integrated following the Lorentz-Force, which interpolates six local field components ($E_{x,y,z}, B_{x,y,z}$) and advances the particles momentum (inertia) and position with an explicit forward-iterating scheme.
+
+Using a snapshot of a simulation can then be used to project the particles physical position forward (and backward) for a meaningful time, under the realistic assumption that fields do not change much in time (besides translation along an axis).
+Figure~\ref{fig:lwfa_particle_advection} shows such particle trajectories of an off-axis injected electron beam in a wakefield, calculate from a single snapshot, reproducing physical betatron oscillation.
 
 \subsection{Impact Beyond ECP}
 

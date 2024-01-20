@@ -14,6 +14,18 @@ In this section we discuss further technical challenges in compiling and executi
 }
 
 \subsection{Frontier}
+The first system delivered under the ECP program, Frontier, is also the first system to break the exascale barrier with a score on the Linpack benchmark of 1.19 exaflops. Frontier is an AMD-based system with 9,472 AMD Epyc CPUs (606,208 cores) and 37,888 AMD MI250X GPUs (8,335,360 cores). The system is organized into 74 racks, consisting of 64 blades with 2 nodes each. A node consists of a single CPU and 4 GPUs with 4 TB of RAM.
+
+Porting to a new system that is under active development brings many challenges. When the first pre-exascale development systems for Frontier came online, VTK-m frequently broke the compiler. At one point in the build, test, release cycle for the compilers, AMD had the VTK-m team building the compilers from bleeding-edge source to help debug the crashes. As the compilers stabilized, the team discovered another issue: compile times that were measured in centuries. And thus, the cycle would begin anew. Along the way there were many issues that required solutions from AMD, Kokkos, and the VTK-m teams. Some examples are:
+\begin{itemize}
+    \item Compiler Errors
+    \item The Optimizer infinite looping - In addition to compiler fixes, the VTK-m source was broken into smaller units to reduce template instantiation
+    \item Parallel Sorting being Single-Threaded - Kokkos hadn't accounted for VTK-m workloads that used integral types (for example, sorting keys). A simple fix provide a 12x speedup in these workloads.
+    \item Function pointers not supported on AMD GPUs - VTK-m was re-written over several months to remove all calls through function pointers
+\end{itemize}
+Currently, a full build of VTK-m with tests and benchmarks can be completed on Frontier in under 20 minutes.
+
+\textbf{Insert current status here}
 
 \assign{Mark}
 
