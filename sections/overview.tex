@@ -1,40 +1,61 @@
 \section{Overview of VTK-m}
 
-\assign{Hank, editting pass (perhaps trimming)}
+%\assign{Hank, editting pass (perhaps trimming)}
 
-The origin of the VTK-m library \cite{Moreland2016} is a USDOE ASCR research project to enable scientific visualization on emerging HPC systems.
-The main goals of VTK-m are twofold: to serve as a repository for interoperable scientific visualization algorithms well suited to accelerator architectures and to provide a framework that simplifies the development of visualization algorithms that can be ported across many accelerator devices.
+The VTK-m library~\cite{Moreland2016} began via a research project funding
+from the 
+Advanced Scientific Computer Research program within the Office of Science of the
+United States Department of Energy.
+The goal of the project was to enable scientific visualization on emerging HPC systems via
+two approaches:
+(1) serving as a repository for interoperable scientific visualization algorithms well suited to accelerator architectures and (2) providing a framework that simplifies the development of visualization algorithms that can be ported across many accelerator devices.
 
 %\ken{Idea from Jay: summarize the filters and stuff we have done in a table so that people can easily add their work.}
 
 %\jay{Table is added and we might simplify this paragraph a little bit and put detailed references into the table.}
 
 At the onset of ECP, VTK-m contained only the most common operations for scientific visualization: contour, threshold, external faces, basic surface simplification, and rendering.
-Although this initial set covers much of the basic needs for scientific visualization, practitioners require much more functionality.
-ECP was fundamental in growing this functionality with the introduction of many more algorithms as well as performance improvements to the existing ones.
+Although this initial set is useful, practitioners almost always require more functionality.
+ECP enabled this additional functionality to grow with the introduction of many more algorithms as well as performance improvements to the existing ones.
 Table~\ref{tab:algorithms} contains a summary of algorithms provided by VTK-m.
-These added features provide the necessary functionality for the tools and applications, discussed later in this paper, that rely on VTK-m to execute on Exascale machines and similar hardware.
+These added features provided the necessary functionality for the tools and applications, discussed later in this paper, that utilized VTK-m to execute on Exascale machines and similar hardware.
 
 \begin{figure}[htb]
   \includegraphics[width=\linewidth]{vtkm-framework}
-  \caption{The basic VTK-m framework that allows device portability.}
+  \caption{The basic VTK-m framework for device portability. \hank{Do we have a copyright issue with using this image?  Has it appeared before?}}
   \label{fig:vtkm-framework}
 \end{figure}
 
-VTK-m also internally provides a framework that simplifies the implementation of these and future algorithms as well as ports these algorithms across different devices.
-The basic structure of the framework is shown in Figure~\ref{fig:vtkm-framework}.
-Code in VTK-m is separated into two separate environments: control and execution.
+The basic structure for VTK-m's framework is shown in Figure~\ref{fig:vtkm-framework}.
+%VTK-m provides a framework designed for optimizing both developer time and execution time on
+%diverse many-core devices.
+The framework separates code into two environments: control and execution.
 These correspond to the ``host'' and ``device,'' respectively, in a GPU development environment.
-That said, the logical control and execution environments are maintained even when there is not a clear separation between host and device, which is the case for some accelerators such as the Xeon Phi \cite{Jeffers2016}.
+This separation is maintained even when 
+there is not a clear separation between host and device, which is the case for some accelerators such as the Xeon Phi~\cite{Jeffers2016}.
+%This design promotes developer efficiency, as
+%VTK-m simplifies implementations for current and future algorithms, and also provides 
+%automatic and efficient porting of these algorithms across different devices.
 
-Mesh structures are definined using a flexible data model \cite{Meredith2012} in the control environment.
-Based on the structure, the data are divided in small pieces, and the pieces are processed in parallel in the execution environment.
 
-All of these aforementioned structural units are implemented with standard C++14 and are universal for any GPU device.
 To achieve portability, VTK-m contains a device adapter that manages interaction with a variety of devices.
 The entirety of VTK-m can be ported with a change to the device adapter.
+%
+Further, all execution code (``device code'') is implemented with standard C++14, and thus universal for any GPU device.
+\hank{Is this statement too strong?}
 
-The device adapter enables parallel execution using the data parallel primitive method \cite{Blelloch1990}.
-Data parallel primitives allow algorithms to be implemented as a sequence of data parallel operations such as scan, sort, or reduce.
-Early work explored how to implement scientific visualization using data parellel primitives \cite{Lo2012}.
-To simplify the implementation further, VTK-m provides a layer of meta data parallel primitives \cite{Moreland2021} that are shown to be efficient during use.
+VTK-m uses multiple approaches to achieve efficient parallelization.
+One approach is 
+to enable data to be divided in small pieces for parallel execution
+using a 
+flexible data model~\cite{Meredith2012}.
+A second approach is 
+to utilize
+data parallel primitive methods~\cite{Blelloch1990}.
+Data parallel primitives allow algorithms to be implemented as a sequence of data parallel operations, such as scan, sort, or reduce.
+Early work explored how to implement scientific visualization using data parellel primitives~\cite{Lo2012}.
+To simplify the implementation further, VTK-m provides ``meta'' data parallel primitives~\cite{Moreland2021} that incorporate common patterns for scientific data that were demonstrated to be efficient.
+Finally, note the VTK-m design achieves developer efficiency --- 
+streamlined algorithm development as well as 
+automatic
+porting to new architectures with an efficient implementation 
