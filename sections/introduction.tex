@@ -8,24 +8,35 @@
 
 \ken{Please complete your writing assignments by January 22.}
 
-\assign{Hank, do an editing pass.}
+%\assign{Hank, do an editing pass.}
 
-The Exascale Computing Project (ECP) brought high-performance computing to the next milestone of capacity computing.
-Although the goal was nominally to stand up computers capable of a billion billion ($10^{18}$) floating point operations per second, the advancement required a revolution on hardware and software to achieve this goal.
-Pivotal to this advancement is the adoption of GPU processors from a variety of vendors as the primary computing engine.
-These GPUs provide an unmatched computational throughput for the power they consume at the cost of greater code complexity.
+The Exascale Computing Project (ECP) brought high-performance computing to the next milestone of capacity computing.\hank{I do not understand the preceding sentence.  Capability?  And we already had HPC.  How did ECP bring HPC?}
+Although the goal was nominally to stand up computers capable of a billion billion ($10^{18}$) floating point operations per second, this advancement required a revolution in both hardware and software.
+Pivotal to this advancement was the adoption of GPU processors from a variety of vendors as the primary computing engine.
+These GPUs provided an unmatched computational throughput relative to the power they consume, albeit at the cost of greater code complexity.
 
-As scientific simulations consume more computation, they produce more data.
-To understand data and promote discovery, these data must be analyzed and visualized, a high-performance task onto itself.
-VTK-m is the software library that makes this possible by implementing classic scientific visualization algorithms redesigned for heavily threaded environments like GPUs.
+Scientific simulations running on exascale supercomputers can produce data sets of unprecedent
+scale, and
+visualization and analysis approaches are frequently used to understand the resulting
+data and promote discovery.
+%
+That said, the scale of the data produced by simulations on exascale computers requires
+the visualization and analysis approaches to themselves utilize significant computation.
+%
+Most commonly, this computation is done using the same supercomputer and hardware that produced
+the data in the first place.
+
+VTK-m is a software library that it possible to process data sets from exacale computers,
+ by implementing classic scientific visualization algorithms redesigned for heavily threaded environments like GPUs.
 VTK-m also provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
 At the inception of ECP, VTK-m was the byproduct of a research project.
-ECP provided the investment to promote VTK-m to production software that now serves as the underlying visualization implementation across all ECP.
+ECP provided the investment to promote VTK-m to production software.
+This software that now serves as the underlying visualization implementation across all ECP.
 VTK-m is currently used by ParaView, VisIt, and Ascent to execute visualization algorithms on Exascale platforms and others using GPU processing.
 
 This paper provides an overview of the main challenges encountered to make visualization available at the Exascale.
-We start with a brief overview of the VTK-m framework.
-We then discuss the largest porting challenges we encountered during ECP as the hardware for the final Exascale machines differed dramatically from the pre-Exascale machines.
+It begins with a brief overview of the VTK-m framework.
+It then discuss the largest porting challenges encountered during ECP as the hardware for the final Exascale machines differed dramatically from the pre-Exascale machines.
 This is followed by a summary of the performance of VTK-m on the Exascale hardware.
-Finally, we discuss the software engineering required to integrate VTK-m into usable visualization tools and successes with using VTK-m to solve problems in real science applications.
+Finally, the paper concludes with a discussion on the software engineering required to integrate VTK-m into usable visualization tools and successes with using VTK-m to solve problems in real science applications.
 This includes porting challenges, performance testing and improvement, integration with other ECP software technologies, and the support of ECP applications.
