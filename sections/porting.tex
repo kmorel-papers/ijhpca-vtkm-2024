@@ -77,7 +77,7 @@ This feature was included into the filter interface overhaul, which is described
 
 \assign{Ollie}
 
-The addition of abstractions like `Variant` in VTK-m also allowed us to redesign the developer's interface for \texttt{Filters}. The original \textit{Filter} class used a rather complicated technique call \emph{Couriously recurring template pattern (CRTP)} emulate runtime polymorphism that is familiar to common object oriented programmers. Many other C++ template techniques were also used to match generic code in several \textit{}
+The addition of abstractions like \texttt{Variant} in VTK-m also allowed us to redesign the developer's interface for \texttt{Filters}. Before \texttt{Variant}, filter implementations has to provide a method \textit{DoExecute} that takes a templated \texttt{ArrayHandle<T>} as one of its arguments. Filter bases classes would iterate through a list of supported data types for \texttt{T}, instantiate and call \texttt{DoExecute} with the concrete type. Since a template method can not be a virtual function which is needed for the usual runtime polymorphism The original \textit{Filter} class used a rather complicated technique call \emph{Couriously recurring template pattern (CRTP)} to emulate runtime polymorphism. Many other C++ template techniques were also used to match generic code in several \textit{Filter} bases classes and concrete \textit{Filter} implementations.
 
 \subsection{GPU-to-GPU Transfers}
 
