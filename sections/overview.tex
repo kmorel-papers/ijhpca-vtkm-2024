@@ -41,8 +41,11 @@ there is not a clear separation between host and device, which is the case for s
 To achieve portability, VTK-m contains a device adapter that manages interaction with a variety of devices.
 The entirety of VTK-m can be ported with a change to the device adapter.
 %
-Further, all execution code (``device code'') is implemented with standard C++14, and thus universal for any GPU device.
+Further, all execution code (``device code'') is implemented with standard C++14,
+%and thus universal for any GPU device.
+and thus can be compiled for any device supporting the C++ language.
 \hank{Is this statement too strong?}
+\ken{I've qualified the statement to be more accurate. I am leaving out some qualifications about using only the subset of the language supported by the device compiler, but would that much detail be necessary here?}
 
 VTK-m uses multiple approaches to achieve efficient parallelization.
 One approach is 
