@@ -15,6 +15,22 @@ This section reports the most major modifications of VTK-m to make it feasible t
 
 \assign{Sujin}
 
+\begin{figure}[htb]
+  \includegraphics[width=\linewidth]{figures/paraview-crusher.png}
+  \includegraphics[width=\linewidth]{figures/threshold-vtkm-gpu-usage-crusher-small.png}
+  \caption{ParaView, with integrated VTK-m accelerated filters, running on Crusher. VTK-m is using the Kokkos device adapter. The output of rocm-smi command is being used to verify and monitor GPU usage by the filters.}
+  \label{fig:paraview-crusher}
+\end{figure}
+
+One of the main features that VTK-m supports is ‘write once, compile anywhere’ for its filters. VTK-m filter’s are implemented in modern C++. The build system of VTK-m can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in VTK-m called the \texttt{DeviceAdapter}. 
+
+\texttt{DeviceAdapters} wrap a parallel execution capable device, providing functionalities for parallel-task scheduling, memory management, and several commonly used parallel algorithms like sort, reduce, etc, through a common interface. These are implemented on top of the native libraries used to program these devices. At the most basic level, a device adapter only needs to provide support for memory management on the device, a way to execute an n-way, fine-grained, parallel task on the device, and atomic operations. There are generic implementations for all of the parallel algorithms like sort, reduce, scan, etc, but it is possible to override these with specialized implementations for best performance. The early versions of VTK-m had \texttt{DeviceAdapter} implementations for single threaded CPUs using standard C++, multithreaded CPUs using the threading building blocks library or OpenMP, and GPGPUs using CUDA.
+
+When the architectures for the initial two major exascale machines, Aurora and Frontier, were announced, it was revealed that they will be using two completely new GPGPU architectures, with their own native libraries (SYCL and HIP). This would have required additional two new device adapter backends. Maintaining these backends together with the already existing backends was would require a lot of effort, especially for a project that is primarily concerned with implementing highly parallel visualization algorithms.
+
+For these reasons, we looked towards another ECP project called Kokkos~\cite{Edwards2014, Trott2022}. Kokkos is a library for implementing performance portable applications in C++. Similar to VTK-m, Kokkos also supports multiple device backends, including HIP and Sycl used by the exascale systems. So, with just one device adapter built on top of Kokkos, we are able to target both the machines.
+
+
 \subsection{Removal of Virtual Methods}
 
 \assign{Ken}
@@ -58,7 +74,7 @@ This feature was included into the filter interface overhaul, which is described
 
 \assign{Ollie}
 
-Maybe combine with previous section.
+The addition of abstractions like `Variant` in VTK-m also allowed us to redesign the developer's interface for \texttt{Filters}. The original \textit{Filter} class used a rather complicated technique call \emph{Couriously recurring template pattern (CRTP)} emulate runtime polymorphism that is familiar to common object oriented programmers. Many other C++ template techniques were also used to match generic code in several \textit{}
 
 \subsection{GPU-to-GPU Transfers}
 

@@ -18,6 +18,32 @@ In this section we discuss the major visualization tools we integrated VTK-m wit
 \subsection{ParaView}
 
 \assign{Sujin}
+The VTK-m library provides high performance implementations of several visualization algorithms for highly parallel processors. However, features such as file IO, rendering, pipeline management, etc, which are essential parts of a full featured visualization toolkit, are beyond the scope of VTK-m. On the other hand, ParaView is a mature visualization software that has robust implementation of these features. Therefore, we wanted to integrate VTK-m into ParaView, such that ParaView can use VTK-m filters to accelerate its operations, when a VTK-m implementation and highly parallel hardware is available.
+
+We wanted to make the use of VTK-m accelerated filters as transparent as possible. Therefore, we have chosen to integrate VTK-m using VTK and ParaView’s factory-instantiation feature. Filter in ParaView are instantiated via a factory method. There can be multiple implementations available for a filter and the factory method chooses an appropriate implementation at run-time based on some criteria. With this method we can override the default ParaView filters with VTK-m based filters. Currently, VTK-m accelerated overrides are available for some commonly used filters such as Contour, Threshold, Gradient, etc. Adding overrides for more filters is a fairly straightforward process as discussed in the following paragraphs.
+
+To override a ParaView filter, we first need to implement a VTK-m wrapper filter in VTK, that provides the interface of the base VTK/ParaView filter and uses VTK-m filters and routines for its operation. The following steps give a high-level overview of how a VTK-m wrapper filter is implemented in VTK/ParaView.
+\begin{itemize}
+    \item Check the filter parameters and only proceed with VTK-m processing for configurations supported by the VTK–m filter implementation.
+    \item Convert the input VTK datasets to VTK-m datasets. 
+    \item Execute the VTK-m filter on the data.
+    \item Convert the output of the VTK-m filter back to VTK datasets
+    \item If at any point during the above steps, there is an error, fall-back to the default VTK implementation. Errors in VTK-m are typically signaled via C++ exceptions.
+\end{itemize}
+
+For the dataset conversion from VTK to VTK-m and back, we have implemented several helper routines. These are zero-copy operations for most cases as only the ownership of the pointers to the underlying resources are transferred wherever possible. Even copy from host to device and device to host are minimized with the use of a VTK-m dataset wrapper in VTK called \texttt{vtkmDataSet}, that implements the interface of \texttt{vtkDataSet} and only copies the data when required. Another commonly used ParaView functionality, of computing the range of the various fields of a dataset, has also been accelerated using VTK-m to speed up the computation and to avoid memory transfer from device to host.
+
+The wrapper filter needs to be registered with the factory for the factory instantiation to work. This is done at the build configure time using the CMake function:
+\texttt{\_vtkm\_add\_override("vtkBaseFilter" "vtkmAcceleratedFilter")} Thne, the accelerated filters need to be enabled using the CMake option \texttt{VTK\_ENABLE\_VTKM\_OVERRIDES}. They can also be turned on or off during run time through ParaView settings as shown in figure.
+
+\begin{figure}[htb]
+  \includegraphics[width=\linewidth]{figures/paraview-settings.png}
+  \includegraphics[width=\linewidth]{figures/paraview-settings.png}
+  \caption{Visualization from a 70 billion cell WarpX Gordon Bell simulation visualized with 2048 GPUs on Frontier.}
+  \label{fig:visit_warpx_frontier}
+\end{figure}
+
+under Settings > General > Use Accelerated Filters. This setting is shown irrespective of whether ParaView was built with the override support. To check if the overrides are actually available, look for “Accelerated filters overrides available” in “About ParaView” under “Client Information” (look under “Connection Information” for server support) . “About ParaView” can be accessed through menu Help > About….
 
 \subsection{VisIt}
 
