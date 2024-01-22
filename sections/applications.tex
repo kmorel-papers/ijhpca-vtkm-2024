@@ -55,7 +55,7 @@ The high cost of the analysis was due to two main factors. First, the large numb
 \end{figure*}
 
 Using VTK-m we can significantly accelerate the computation of \poincare maps using the parallelism available on GPUs. Because the trajectory of each particle is completely independent, the task can be parallelized over each particle. Using this approach, a \poincare map can be computed in under $3$ minutes. The wall-clock time for a typical WDMApp simulation step is between $1.5$ and $2$ minutes, which means that \poincare maps can be computed in situ in nearly real-time.
-When WDMApp is run, the workflow control system, EFFIS~\cite{Suchyta2022-effis}, allocates an additional 1 to 2 additional nodes for the \poincare map analysis. As a simulation step completes, EFFIS launches a \poincare analysis task on GPUs in the node in a round-robin fashion. This allows asynchronous analysis to be performed on the additional nodes while the simulation is running.
+When WDMApp is run, the workflow control system, EFFIS~\cite{Suchyta2022:effis}, allocates an additional 1 to 2 additional nodes for the \poincare map analysis. As a simulation step completes, EFFIS launches a \poincare analysis task on GPUs in the node in a round-robin fashion. This allows asynchronous analysis to be performed on the additional nodes while the simulation is running.
 Real-time generation of \poincare maps provides the WDMApp team with unprecedented capability for analysis of magnetic fields in fusion simulations.
 
 
@@ -119,7 +119,7 @@ In addition to the applications mentioned above, VTK-m still serves as the key i
 
 Before being selected as a project in ECP, VTK-m was a core component in Visualization for the Extreme-Scale Scientific Computation Ecosystem (XVis)~\cite{Moreland2019}. 
 XVis focused on multiple ways to integrate \emph{in situ} visualization with the simulation, extract key information, and decrease the data size for post-hoc processing.
-The ``\emph{in situ} reduction + post hoc'' paradigm is widely adopted in multiple scientific domains, such as probability distribution functions (PDF) extraction of fields in combustion simulation~\cite{7874311}, and binning mechanism to reduce the data size of fusion simulation~\cite{Kress2018}. 
+The ``\emph{in situ} reduction + post hoc'' paradigm is widely adopted in multiple scientific domains, such as probability distribution functions (PDF) extraction of fields in combustion simulation~\cite{Ye2016}, and binning mechanism to reduce the data size of fusion simulation~\cite{Kress2018}. 
 
 
 Nyx is a cosmological simulation that aims to solve compressible hydrodynamics with N-body treatment of the dark matter. Each simulation run may contain hundreds of time steps with multiple sets of simulation input parameters. The raw data size is usually hundreds of TBs to several PBs, which causes challenges to process data in post-processing. 
