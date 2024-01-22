@@ -34,16 +34,14 @@ To override a ParaView filter, we first need to implement a VTK-m wrapper filter
 For the dataset conversion from VTK to VTK-m and back, we have implemented several helper routines. These are zero-copy operations for most cases as only the ownership of the pointers to the underlying resources are transferred wherever possible. Even copy from host to device and device to host are minimized with the use of a VTK-m dataset wrapper in VTK called \texttt{vtkmDataSet}, that implements the interface of \texttt{vtkDataSet} and only copies the data when required. Another commonly used ParaView functionality, of computing the range of the various fields of a dataset, has also been accelerated using VTK-m to speed up the computation and to avoid memory transfer from device to host.
 
 The wrapper filter needs to be registered with the factory for the factory instantiation to work. This is done at the build configure time using the CMake function:
-\texttt{\_vtkm\_add\_override("vtkBaseFilter" "vtkmAcceleratedFilter")} Thne, the accelerated filters need to be enabled using the CMake option \texttt{VTK\_ENABLE\_VTKM\_OVERRIDES}. They can also be turned on or off during run time through ParaView settings as shown in figure.
+\texttt{\_vtkm\_add\_override("vtkBaseFilter" "vtkmAcceleratedFilter")} Thne, the accelerated filters need to be enabled using the CMake option \texttt{VTK\_ENABLE\_VTKM\_OVERRIDES}. They can also be turned on or off during run time through ParaView settings as shown in Figure~\ref{fig:paraview_settings}.
 
 \begin{figure}[htb]
-  \includegraphics[width=\linewidth]{figures/paraview-settings.png}
-  \includegraphics[width=\linewidth]{figures/paraview-settings.png}
-  \caption{Visualization from a 70 billion cell WarpX Gordon Bell simulation visualized with 2048 GPUs on Frontier.}
-  \label{fig:visit_warpx_frontier}
+  \includegraphics[width=\linewidth]{figures/pv-override-settings.png}
+  \caption{Left: ParaView setting \texttt{Use Accelerated Filters} can be used to turn on or off accelrated filters at run-time. This setting is shown irrespective of whether ParaView was built with the override support or not. Right: The availability of the accelerated filters can be found under \texttt{About ParaView/Client Information} for clients and \texttt{About ParaView/Connection Information} for servers.}
+  \label{fig:paraview_settings}
 \end{figure}
 
-under Settings > General > Use Accelerated Filters. This setting is shown irrespective of whether ParaView was built with the override support. To check if the overrides are actually available, look for “Accelerated filters overrides available” in “About ParaView” under “Client Information” (look under “Connection Information” for server support) . “About ParaView” can be accessed through menu Help > About….
 
 \subsection{VisIt}
 

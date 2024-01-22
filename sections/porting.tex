@@ -22,6 +22,9 @@ This section reports the most major modifications of VTK-m to make it feasible t
   \label{fig:paraview-crusher}
 \end{figure}
 
+\sujin{
+The first two paragraphs can be simplified by referring to the device adapter explanation in the VTK-m overview section
+}
 One of the main features that VTK-m supports is ‘write once, compile anywhere’ for its filters. VTK-m filter’s are implemented in modern C++. The build system of VTK-m can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in VTK-m called the \texttt{DeviceAdapter}. 
 
 \texttt{DeviceAdapters} wrap a parallel execution capable device, providing functionalities for parallel-task scheduling, memory management, and several commonly used parallel algorithms like sort, reduce, etc, through a common interface. These are implemented on top of the native libraries used to program these devices. At the most basic level, a device adapter only needs to provide support for memory management on the device, a way to execute an n-way, fine-grained, parallel task on the device, and atomic operations. There are generic implementations for all of the parallel algorithms like sort, reduce, scan, etc, but it is possible to override these with specialized implementations for best performance. The early versions of VTK-m had \texttt{DeviceAdapter} implementations for single threaded CPUs using standard C++, multithreaded CPUs using the threading building blocks library or OpenMP, and GPGPUs using CUDA.

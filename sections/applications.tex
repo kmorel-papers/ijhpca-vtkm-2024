@@ -46,8 +46,16 @@ The WDMApp team has a \poincare map code that runs on CPUs and takes several hou
 %Because of this cost, the generation \poincare maps required careful planning.
 The high cost of the analysis was due to two main factors. First, the large numbers of particles and intersections required previously mentioned, and second, the complexity of the magnetic field calculation.  In many applications of particle advection, the vector field is calculated at the nodes of each cell in the mesh. Linear interpolation within the cell is used to evaluate the magnetic field for the particle being advected. Because of the large number of advection steps required for each particle in the \poincare map, small errors can rapidly accumulate. These errors are compounded by the fact that the evaluation of the magnetic field requires a complex set of calculations requiring high-order interpolation of several quantities.
 
+\begin{figure*}[ht]
+  \centering
+%  \includegraphics[width=0.49\linewidth]{figures/poincare1}
+%  \includegraphics[width=0.49\linewidth]{figures/poincare2}
+  \caption{\poincare maps.}
+  \label{fig:poincare}
+\end{figure*}
+
 Using VTK-m we can significantly accelerate the computation of \poincare maps using the parallelism available on GPUs. Because the trajectory of each particle is completely independent, the task can be parallelized over each particle. Using this approach, a \poincare map can be computed in under $3$ minutes. The wall-clock time for a typical WDMApp simulation step is between $1.5$ and $2$ minutes, which means that \poincare maps can be computed in situ in nearly real-time.
-When WDMApp is run, the workflow control system, EFFIS~\cite{effis}, allocates an additional 1 to 2 additional nodes for the \poincare map analysis. As a simulation step completes, EFFIS launches a \poincare analysis task on GPUs in the node in a round-robin fashion. This allows asynchronous analysis to be performed on the additional nodes while the simulation is running.
+When WDMApp is run, the workflow control system, EFFIS~\cite{Suchyta2022-effis}, allocates an additional 1 to 2 additional nodes for the \poincare map analysis. As a simulation step completes, EFFIS launches a \poincare analysis task on GPUs in the node in a round-robin fashion. This allows asynchronous analysis to be performed on the additional nodes while the simulation is running.
 Real-time generation of \poincare maps provides the WDMApp team with unprecedented capability for analysis of magnetic fields in fusion simulations.
 
 
@@ -55,25 +63,24 @@ Real-time generation of \poincare maps provides the WDMApp team with unprecedent
 
 \subsection{Laser Wakefield Acceleration}\label{sec:warpx}
 
-\assign{Axel, Abhi}
-
+\assign{Axel, Abhi}~%
+%
 %\defcitealias{FedeliHuebl2022}{Fedeli, Huebl et al. (2022)}
 %\citepalias{FedeliHuebl2022}
+%
+WarpX is a particle-in-cell simulation code, which was awarded the 2022 ACM Gordon Bell Prize~\cite{FedeliHuebl2022}.
+As part of ECP, WarpX was developed as a new application succeeding its predecessor Warp~\cite{Vay2013}, with the goal to study advanced particle acceleration in laser-driven plasma wakefields, towards future high-energy physics colliders~\cite{Albert2021}.
+Beyond that, WarpX is used to describe kinetic physics in particle accelerators, laser-plasmas, fusion devices, inertial confinement fusion and astrophysical plasmas, and is used to model microelectronics~\cite{Yao2022}.
 
-WarpX is a new particle-in-cell simulation code developed as part of ECP, which was awarded the 2022 ACM Gordon Bell Prize~\cite{FedeliHuebl2022}.
-In ECP, WarpX was developed as a fully new code succeeding its predecessor Warp~\cite{Vay2013}, with the goal to study advanced particle acceleration in laser-driven plasma wakefields, towards future high-energy physics colliders.
+Figure~\ref{fig:warpx_lwfa} is an in situ rendering of a \emph{staged} laser wakefield accelerator in a boosted reference frame~\cite{Vay2011}.
+An electron beam (orange-green) is accelerated to the right through multiple stages to high energies.
+In the plasma stages (grey), the strong traversal focusing fields are shown in red-blue.
 
-Figure~\ref{fig:warpx_lwfa} is an in situ rendering of a \text{staged} laser wakefield accelerator in a boosted reference frame~\cite{Vay2011}.
 In the staging approach, a particle beam is accelerated subsequently through multiple plasma elements.
 In each stage, an ultra-intense laser pulse is exciting a plasma wakefield.
 This depletes the laser pulse's energy to generate very strong electric fields in the plasma wake, which can be used to accelerate an injected electron beam.
-The acceleration itself can be three to four orders of magnitude more compact than staging state-of-the-art radio-frequency accelerator elements.
+The acceleration itself can be three to four orders of magnitude more compact than relying on state-of-the-art radio-frequency accelerator elements.
 Besides increased beam energy, physicists study how to preserve beam properties essential for transport, focusing (e.g., emittance) and applications (e.g., charge and current).
-
-Shown in figure~\ref{fig:warpx_lwfa} are the strong traversal focusing fields (red-blue) in the plasma stages (gray).
-An electron beam (orange-green) is accelerated to the right through multiple stages to high energies.
-% Mentioned in Ascent section:
-% The scene combines volume rendering (plasma stage), isocontours (focusing fields) and particle glyphs (accelerated beam).
 
 WarpX features advanced techniques such as GPU-acceleration for three vendors, mesh-refinement capabilities, dynamic load balancing, and unique advanced numerical solvers.
 WarpX relies on multi-level parallelization: coarse parallelization relies on block-structured domain-decomposition with MPI using the AMReX library~\cite{Zhang2019} and compute acceleration with CUDA/HIP/SYCL or OpenMP, so that simulations are scalable to the world's largest supercomputers.
@@ -91,14 +98,15 @@ WarpX performs data preparation steps for diagnostics in situ and shares the res
   \label{fig:lwfa_particle_advection}
 \end{figure*}
 
-Realistic visualization of particle trajectories (advection) in a plasma or particle accelerator requires high temporal fidelity in traditional workflows.
+Realistic visualization of particle trajectories (advection) in a plasma or particle accelerator requires high temporal fidelity in traditional workflows, which can create a high data overhead.
 With VTK-m, an opportunity to significantly reduce data input for such workflows was identified, making use of a physics-motivated advection algorithm and the slowly changing nature of fields in a wakefield accelerator.
 
 Plasma particles such as electrons and ions are inert and can be relativistic, which effectively changes their mass as they move.
 Traditional advection algorithms only made use of local properties of fields, without a history and inert nature of a streamline.
-As in a particle-in-cell algorithm, the realistic track of a charged plasma particle can be integrated following the Lorentz-Force, which interpolates six local field components ($E_{x,y,z}, B_{x,y,z}$) and advances the particles' momentum (inertia) and position with an explicit forward-iterating scheme.
+As in a particle-in-cell algorithm, the realistic track of a charged plasma particle can be integrated following the Lorentz-Force, which interpolates six local field components ($E_{x,y,z}, B_{x,y,z}$) and advances the particles' momentum (inertia) and position with an explicit iteration scheme~\cite{Boris1970}.
+The updated momentum is tracked over the path of a streamline to account for the evolving particle.
 
-A snapshot of a simulation can then be used to project the particles' physical position forward (and backward) for a meaningful time, under the realistic assumption that fields do not change much in time (besides translation along an axis).
+With this advection algorithm integrated in VTK-m, a snapshot of a simulation can be used to project the particles' physical position forward (and backward) for a meaningful time, under the realistic assumption that fields are quasi-static, i.e., do not change much in time (besides translation along an axis).
 Figure~\ref{fig:lwfa_particle_advection} shows such particle trajectories of an off-axis injected electron beam in a wakefield, calculated from a single snapshot, reproducing physical betatron oscillation.
 
 \subsection{Impact Beyond ECP}
