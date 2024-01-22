@@ -20,13 +20,14 @@ ECP enabled this additional functionality to grow with the introduction of many 
 Table~\ref{tab:algorithms} contains a summary of algorithms provided by VTK-m.
 These added features provided the necessary functionality for the tools and applications, discussed later in this paper, that utilized VTK-m to execute on Exascale machines and similar hardware.
 
-\begin{figure}[htb]
-  \includegraphics[width=\linewidth]{vtkm-framework}
-  \caption{The basic VTK-m framework for device portability. \hank{Do we have a copyright issue with using this image?  Has it appeared before?}}
-  \label{fig:vtkm-framework}
-\end{figure}
+%% \begin{figure}[htb]
+%%   \includegraphics[width=\linewidth]{vtkm-framework}
+%%   \caption{The basic VTK-m framework for device portability. \hank{Do we have a copyright issue with using this image?  Has it appeared before?} \ken{I'm not totally sure. For now, let's delete it and use something else instead.}}
+%%   \label{fig:vtkm-framework}
+%% \end{figure}
 
-The basic structure for VTK-m's framework is shown in Figure~\ref{fig:vtkm-framework}.
+%The basic structure for VTK-m's framework is shown in Figure~\ref{fig:vtkm-framework}.
+The basic workflow for an algorithm in VTK-m's framework is shown in Figure~\ref{fig:vtkm-workflow}.
 %VTK-m provides a framework designed for optimizing both developer time and execution time on
 %diverse many-core devices.
 The framework separates code into two environments: control and execution.
