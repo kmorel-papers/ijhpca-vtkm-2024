@@ -18,20 +18,38 @@ This section reports the most major modifications of VTK-m to make it feasible t
 \begin{figure}[htb]
   \includegraphics[width=\linewidth]{figures/paraview-crusher.png}
   \includegraphics[width=\linewidth]{figures/threshold-vtkm-gpu-usage-crusher-small.png}
-  \caption{ParaView, with integrated VTK-m accelerated filters, running on Crusher. VTK-m is using the Kokkos device adapter. The output of rocm-smi command is being used to verify and monitor GPU usage by the filters.}
+  \caption{
+    ParaView, with integrated VTK-m accelerated filters, running on Crusher.
+    VTK-m is using the Kokkos device adapter.
+    The output of rocm-smi command is being used to verify and monitor GPU usage by the filters.
+    \ken{I think it would be better to move this figure (or something like it) to the ParaView section.}
+  }
   \label{fig:paraview-crusher}
 \end{figure}
 
-\sujin{
-The first two paragraphs can be simplified by referring to the device adapter explanation in the VTK-m overview section
-}
-One of the main features that VTK-m supports is ‘write once, compile anywhere’ for its filters. VTK-m filter’s are implemented in modern C++. The build system of VTK-m can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in VTK-m called the \texttt{DeviceAdapter}. 
+%\sujin{
+%The first two paragraphs can be simplified by referring to the device adapter explanation in the VTK-m overview section
+%}
+As described in the overview of VTK-m,
+one of the main features that VTK-m supports is ``write once, compile anywhere'' for its algorithms.
+%VTK-m filter’s are implemented in modern C++. The build system of VTK-m can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in VTK-m called the \texttt{DeviceAdapter}.
+A device portability layer called a device adapter allows algorithms written with standard C++ features run across all devices.
+These device adapters wrap a parallel execution capable device and provide functionalities for parallel-task scheduling, memory management, and several commonly used parallel algorithms like sort, reduce, etc, through a common interface.
+These are implemented on top of the native libraries used to program these devices.
+%At the most basic level, a device adapter only needs to provide support for memory management on the device, a way to execute an n-way, fine-grained, parallel task on the device, and atomic operations.
+%There are generic implementations for all of the parallel algorithms like sort, reduce, scan, etc, but it is possible to override these with specialized implementations for best performance.
+%The early versions of VTK-m had \texttt{DeviceAdapter} implementations for single threaded CPUs using standard C++, multithreaded CPUs using the threading building blocks library or OpenMP, and GPGPUs using CUDA.
 
-\texttt{DeviceAdapters} wrap a parallel execution capable device, providing functionalities for parallel-task scheduling, memory management, and several commonly used parallel algorithms like sort, reduce, etc, through a common interface. These are implemented on top of the native libraries used to program these devices. At the most basic level, a device adapter only needs to provide support for memory management on the device, a way to execute an n-way, fine-grained, parallel task on the device, and atomic operations. There are generic implementations for all of the parallel algorithms like sort, reduce, scan, etc, but it is possible to override these with specialized implementations for best performance. The early versions of VTK-m had \texttt{DeviceAdapter} implementations for single threaded CPUs using standard C++, multithreaded CPUs using the threading building blocks library or OpenMP, and GPGPUs using CUDA.
+When the architectures for the initial two major Exascale machines, Aurora and Frontier, were announced, it was revealed that they would be using two completely new GPGPU architectures, with their own native libraries (SYCL and HIP).
+This would have required additional two new device adapter backends.
+Although the device adapter layer greatly simplifies the porting of VTK-m code, implementing device adapters themselves is not trivial.
+So, although it would be technically feasible to design device adapters for two new devices, it would have required significant effort.
+%Maintaining these backends together with the already existing backends was would require a lot of effort, especially for a project that is primarily concerned with implementing highly parallel visualization algorithms.
 
-When the architectures for the initial two major exascale machines, Aurora and Frontier, were announced, it was revealed that they will be using two completely new GPGPU architectures, with their own native libraries (SYCL and HIP). This would have required additional two new device adapter backends. Maintaining these backends together with the already existing backends was would require a lot of effort, especially for a project that is primarily concerned with implementing highly parallel visualization algorithms.
+For these reasons, we looked towards another ECP project called Kokkos~\cite{Edwards2014, Trott2022}. Kokkos is a library for implementing performance portable applications in C++. Similar to VTK-m, Kokkos also supports multiple device backends, including HIP and SYCL used by the Exascale systems. So, with just one device adapter built on top of Kokkos, we are able to target both the machines.
+This allows us to write the VTK-m device adapter once to the Kokkos API and defer the work of interfacing with the different ECP device APIs to the Kokkos team, who were already doing this for other ECP projects.
 
-For these reasons, we looked towards another ECP project called Kokkos~\cite{Edwards2014, Trott2022}. Kokkos is a library for implementing performance portable applications in C++. Similar to VTK-m, Kokkos also supports multiple device backends, including HIP and Sycl used by the exascale systems. So, with just one device adapter built on top of Kokkos, we are able to target both the machines.
+\ken{Is there anything more to be said about the interface? Was there anything particularly challenging? Any mismatch between the APIs? Any ``hacks'' that might have happened?}
 
 
 \subsection{Removal of Virtual Methods}
@@ -81,12 +99,19 @@ The addition of abstractions like \texttt{Variant} in VTK-m also allowed us to r
 
 \subsection{GPU-to-GPU Transfers}
 
-Modern HPC GPUs allow direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to directly send data stored in their device memory to the target GPU device memory. This contrasts with the traditional and costly GPU communication pattern which consists in first copying the desired data from the device memory to host memory, transferring it, and then again copying the received data from host memory to device memory.
+Modern HPC GPUs allow direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to directly send data stored in their device memory to the target GPU device memory. This contrasts with the traditional and costly GPU communication pattern that consists in first copying the desired data from the device memory to host memory, transferring it, and then again copying the received data from host memory to device memory.
 
-Enabling this feature in VTK-m required changes in the source code of both \begin{enumerate*} [label=\itshape(\alph*\upshape)]\item VTK-m and \item DIY\end{enumerate*}. The reason for making changes to DIY is that VTK-m delegates data marshaling and remote communication through the DIY library.
+Enabling this feature in VTK-m required changes in the source code of both VTK-m itself and DIY, a third-party library that VTK-m uses to manage its MPI communication~\cite{Peterka2011,Morozov2016}.
+%The reason for making changes to DIY is that VTK-m delegates data marshaling and remote communication through the DIY library.
 
-\textit{(a)} DIY library source code changes consisted in adding routines that allow sending and receiving raw pointers directly encapsulated in a newly introduced Blob data type. This contrasts with the regular operation of DIY that copies and serializes data before sending and receiving. In addition to that, we have also introduced a new API in DIY which controls the ownership of the passed raw pointer.
+The DIY library changes consisted of adding routines that allow sending and receiving raw pointers directly encapsulated in a newly introduced ``blob'' data type. This contrasts with the regular operation of DIY that copies and serializes data before sending and receiving. In addition to that, we have also introduced a new API in DIY that controls the ownership of the passed raw pointer.
 
-\textit{(b)} VTK-m source code changes consisted in changes to the VTK-m Buffer class and  adding a new CMake option named \texttt{VTKm\_ENABLE\_GPU\_MPI} which activates direct GPU-to-GPU communication of VTK-m Buffer objects. This in turn, enables direct GPU communication in VTK-m since most of the VTK-m storage entities are composed of VTK-m Buffers. 
+The corresponding VTK-m changes consisted of modifying the VTK-m class that manages memory buffers and their location among host and devices.
+In particular, the changes overwrite the DIY serialization to directly pass these memory buffers to and from DIY.
+Additionally, a new CMake option named \texttt{VTKm\_ENABLE\_GPU\_MPI} that activates direct GPU-to-GPU communication of VTK-m buffer objects was added.
+This in turn, enables direct GPU communication in VTK-m since most of the VTK-m storage entities are composed of VTK-m buffers. 
 
-The main challenge found during the implementation of this feature was maintaining compatibility with the target systems, OLCF Frontier. The challenged consisted in the fact that the software stack in the target system was a moving target with frequent updates that in many cases required us to tune build and runtime parameters and, in some other cases, perform changes to the VTK-m and DIY source code. This challenge was minimized by provisioning the VTK-m Gitlab project with nightly jobs that build and run tests that use this feature in the OLCF Frontier test-bed system (OLCF Crusher). 
+The main challenge found during the implementation of this feature was maintaining compatibility with the Frontier target system.
+The problem was that the software stack in the target system was a moving target with frequent updates that in many cases required us to modify build and runtime parameters and, in some other cases, perform changes to the VTK-m and DIY source code.
+This challenge was minimized by provisioning the VTK-m Gitlab project with nightly jobs that build and run tests using this feature in the Frontier test-bed system.
+This allowed us to quickly identify problems arising in changes to either VTK-m's source code or the Frontier software stack.
