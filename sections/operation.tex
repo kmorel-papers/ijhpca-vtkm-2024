@@ -34,3 +34,11 @@ Currently, a full build of VTK-m with tests and benchmarks can be completed on F
 \subsection{Aurora}
 
 \assign{Silvio}
+
+The Aurora supercomputer, deployed at the Argonne Leadership Computing Facility (ALCF), is set to deliver over 2 exaflops of computational power. With 166 racks and 10,624 nodes, it houses 21,248 Intel Xeon CPU Max Series processors and 63,744 Intel Data Center GPU Max Series processors.
+
+Our journey initiated in August 2020, as we started building VTK-m on the Joint Laboratory for System Integration (JLSE) test platform at Argonne National Laboratory. We began our work using the Iris test platform, which consisted of 20 nodes equipped with Intel Gen 9 graphics processors. By September 2021, we transitioned to Arcticus, a testbed featuring 17 nodes equipped with 2x Intel Server GPUs code-named Arctic Sound. From August 2022, we conducted tests on Florentia, a test platform containing early versions of the Aurora GPUs. Finally, by January 2023, our efforts shifted to Sunspot, the Aurora test and development system, comprising 128 nodes with 2x Intel Xeon CPU Max Series processors and 6x Intel Data Center GPU Max Series processors. First light on Aurora occurred in August 2023.
+
+Throughout our porting and testing efforts, we maintained close collaboration with Intel engineers and ALCF performance engineering staff. This collaboration led to the identification and resolution of several bugs in successive versions of the Intel oneAPI SDK. In November 2020, we completed a first set of early VTK-m benchmarks on Iris using Kokkos with OpenMP target offload. However, in February 2021, we encountered issues with virtual methods when transitioning to Kokkos with SYCL. Fortunately, the team anticipated this problem and had already started the process of replacing virtual methods (see the section {\it Removal of Virtual Methods}), and this issue was resolved soon after. Additionally, we worked with Intel to address long build times.
+
+By December 2023, the latest VTK-m and Kokkos development branch were successfully running on Aurora, achieving a 97\% success rate in Ctest regression tests. Porting, deployment, and integration efforts are set to continue on Aurora as we move beyond the ECP era.
