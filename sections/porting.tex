@@ -149,7 +149,7 @@ The library is no longer a header-only library and can be built as a traditional
 The filter library is further divided into several modules with each separately compiled into a \texttt{.so} file.
 Applications now do not need to be compiled by a device compiler simply because they are using VTK-m.
 
-The ability to control template instantiation and separate, concurrent compilation of the filter library has greatly reduced application build time because they no longer has to compile many VTK-m templates.
+The new filter structure, which removes exposed templates and encapsulates code into libraries, greatly reduces application build time because applications no longer have to compile many VTK-m templates.
 Rather, applications simply link to methods in the VTK-m library.
 We have also found that the new approach provides other compile-time saving opportunities within the library.
 For example, some filters incorporate the functionality of others as a subprocess.
