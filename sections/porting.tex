@@ -52,7 +52,7 @@ This allows us to write the VTK-m device adapter once to the Kokkos API and defe
 \ken{Is there anything more to be said about the interface? Was there anything particularly challenging? Any mismatch between the APIs? Any ``hacks'' that might have happened?}
 
 
-\subsection{Removal of Virtual Methods}
+\subsection{Addition and then Removal of Virtual Methods}
 
 \assign{Ken}
 
@@ -64,7 +64,9 @@ Unfortunately, this is seldom the case for VTK-m where data ingested from differ
 and different types of memory layout.
 In the early years of ECP, this problem was addressed by compiling algorithms in VTK-m for all possible types that could be encountered.
 However, the amount of potential cases generated is too large to be practical.
+
 C++ objects with virtual methods are a natural solution to this problem, and as they became available on CUDA devices, VTK-m started using virtual methods to hide the structure of arrays.
+This originally addressed some of the issues with type abstraction.
 However, this solution worked poorly and was later abandoned for two reasons.
 First, using virtual methods introduced problems with library linking as the compilers had to collect any possible code that might be needed to be loaded on the device.
 Second, when ECP announced that its Exascale machines would be using GPUs other than CUDA, it was unclear how well they would support virtual methods or even if they would be supported at all.
@@ -95,13 +97,42 @@ This feature was included into the filter interface overhaul, which is described
 
 \assign{Ollie}
 
-The addition of \texttt{Variant} and the redesign of array management in VTK-m also enabled us to further redesign the developer's interface for \texttt{Filter}s. Previously, a filter implementation had to provide a \texttt{DoExecute} method that took a template \texttt{ArrayHandle<T>} as one of its arguments. Filter base classes would iterate through a list of supported data types, defined by the filter developer, instantiate and call \texttt{DoExecute} with each of the concrete type \texttt{T}. There were several downsides of this design. First, as mentioned above, we had to instantiate a large number of \textit{DoExecute}, one for each of \texttt{T} in the list. Second, since a C++ template method can not also be a virtual function which is needed for runtime polymorphism, the original design used a rather complicated technique called \emph{Couriously recurring template pattern (CRTP)} to emulate it. However, using CRTP also made the \texttt{Filter} class itself a class template. This made the VTK-m filter library essentially a \emph{header only} library and clients using it had to include all the necessary header files. When compiling client code, all those header files had to be parsed and classes and methods had to be instantiated. As a consequence, it took a long time to compile applications of VTK-m. This issue was most prominent when compiling for GPU devices since most device compilers were not as efficient in handling C++ templates as host compilers. When VTK-m is integrated as part of an in situ pipeline, simulation code calling VTK-m's filters also needed to be compiled by a device compiler, thus exacerbated the problem. In some extreme cases, the whole compilation process took more than 24 hours to complete.
+The majority of algorithms in VTK-m are contained in what is called a ``filter'' object.
+A filter takes a data set, performs some operations to modify it, and returns the resulting data set.
+Filters provide the outwardly facing API to processing data in VTK-m.
+However, as previously described, these data sets can have any number of data types and structures.
+The VTK-m filter base class needs to provide a mechanism to resolve data types.
+That is, the filter base class needs a way to call a templated method in a derived implementation class with fully resolved data types.
+
+Since a C++ template method can not also be a virtual function, which is needed for typical runtime polymorphism, the original design used a rather complicated technique called Couriously recurring template pattern (CRTP) \cite{Coplien1995} to emulate it.
+CRTP works by making the type of the derived class a template argument to the base class.
+When the base class needs to call a method in the derived class, rather than use a virtual method it recasts itself as the derived class and calls the method directly.
+This allowed the base class to iterate through a list of supported data types and call a templated method in the derived class to implement the algorithm on each one.
+
+%The addition of \texttt{Variant} and the redesign of array management in VTK-m also enabled us to further redesign the developer's interface for \texttt{Filter}s.
+%Previously, a filter implementation had to provide a \texttt{DoExecute} method that took a template \texttt{ArrayHandle<T>} as one of its arguments.
+%Filter base classes would iterate through a list of supported data types, defined by the filter developer, instantiate and call \texttt{DoExecute} with each of the concrete type \texttt{T}.
+%There were several downsides of this design.
+%First, as mentioned above, we had to instantiate a large number of \textit{DoExecute}, one for each of \texttt{T} in the list.
+%Second, since a C++ template method can not also be a virtual function which is needed for runtime polymorphism, the original design used a rather complicated technique called \emph{Couriously recurring template pattern (CRTP)} to emulate it.
+
+However, using CRTP also made the base filter class itself a class template, and its execution methods required exposed definitions that needed to be recompiled at every instance of its use.
+This made the VTK-m filter library essentially a header only library and clients using it had to include all the necessary implementation in the header files.
+When compiling client code, all those header files had to be parsed and classes and methods had to be instantiated.
+As a consequence, it took a long time to compile applications of VTK-m.
+This issue was most prominent when compiling for GPU devices since most device compilers were not as efficient in handling C++ templates as host compilers.
+When integrated as part of an in situ pipeline, simulation code calling VTK-m's filters also needed to be compiled by a device compiler, thus exacerbated the problem.
+In some extreme cases, the whole compilation process took more than 24 hours to complete.
+
+% I'm rewording some stuff and removing some of the details like class/method names where possible. I still need to address below this line.
 
 The new design turned this \emph{type dispatching} mechanism around. The responsibility of type dispatching was shifted from the \texttt{Filter} base class to \texttt{DoExecute}. The \texttt{DoExecute} now only has a single argument of \texttt{DataSet}. The implementation of \texttt{DoExecute} first extracts an \texttt{UnknownArrayHandle} from the dataset. It then performs the type dispatching by calling various forms of \texttt{CastAndCall} on the array handle, passing in type dependent, core business logic of the filter implementation as a lambda expression. The lambda expression will be instantiated with types from a pre-defined type list. When the \emph{value type} of the array handle is not part of the type list, filter implementation can choose to fallback to \texttt{float} as described in previous section. A pre-defined type list and fallback to \texttt{float} limits the number of instantiations of the lambda expression. Using lambda expression also limits the portion of code in \texttt{DoExecute} to be instantiated where as in the old design, the whole body of \texttt{DoExecute} had to be instantiated.
 
 Since \texttt{DoExecute} is now a non-template method, it could be a virtual method. This eliminated the need to use the CRTP technique. As a consequence, the whole \texttt{Filter} class hierarchy became non-template classes as well. The library is no longer a header only library and can be built as a traditional, pre-compiled library. The filter library is further divided into several modules and each separately compiled into a \texttt{.so} file. Applications now do not need to be compiled by a device compiler simply because they are using VTK-m.
 
-The ability to control template instantation and seperate, concurrent compilation of the filter library has greatly reduce library and application built time. \ollie{Ken can you add some concrete timing measure as you did before here?}
+The ability to control template instantation and seperate, concurrent compilation of the filter library has greatly reduce library and application built time.
+\ollie{Ken can you add some concrete timing measure as you did before here?}
+\ken{I will look. I probably don't have anything concrete. I'm not sure I captured enough data to measure the time before the filter change and the time after. (A lot changed in the interim anyway.) But I think I can pull up a couple of examples.}
 
 \subsection{GPU-to-GPU Transfers}
 
