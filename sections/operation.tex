@@ -4,31 +4,62 @@ The ECP Exascale platforms are unique in many ways.
 The previous section summarized the major software development changes to prepare for the platform.
 In this section we discuss further technical challenges in compiling and executing \vtkm.
 
-\ken{
-  Each subsection should be roughly 1/2 page.
-  (1 page total.)
-  The subsection shold start with a brief overview of the system, focusing on unique features.
-  The following paragraphs should describe a challenge and then discuss how the challenge was addressed.
-  Some examples include long compile times, errors for function pointer calls, compiler errors.
-  The section should end with a paragraph summarizing the current state of \vtkm on the system.
-}
+%% \ken{
+%%   Each subsection should be roughly 1/2 page.
+%%   (1 page total.)
+%%   The subsection shold start with a brief overview of the system, focusing on unique features.
+%%   The following paragraphs should describe a challenge and then discuss how the challenge was addressed.
+%%   Some examples include long compile times, errors for function pointer calls, compiler errors.
+%%   The section should end with a paragraph summarizing the current state of \vtkm on the system.
+%% }
 
 \subsection{Frontier}
-The first system delivered under the ECP program, Frontier, is also the first system to break the Exascale barrier with a score on the Linpack benchmark of 1.19 exaflops. Frontier is an AMD-based system with 9,472 (9408 for compute only) AMD Epyc CPUs ($>$ 600,000 cores) and 37,888 (37,632 compute) AMD MI250X GPUs ($>$ 8.3 million cores). The system is organized into 74 racks, each comprising 64 blades with 2 nodes each. A node consists of a single CPU and 4 GPUs with 4 TB of RAM. Each GPU consists of two Graphics Compute Dies (GCD), which means that a node present itself to device code as having 8 GPUs.
+The first system delivered under the ECP program, Frontier, is also the first system to break the Exascale barrier with a score on the Linpack benchmark of 1.19 exaflops.
+Frontier is an AMD-based system with 9,472 AMD Epyc CPUs (with 9,408 reserved for compute only) totalling over 600,000 cores.
+However, the majority of the processing power comes from 37,888 AMD MI250X GPUs (with 37,632 reserved for compute only) totalling over 8.3 million cores.
+The system is organized into 74 racks, each comprising 64 blades with 2 nodes each.
+A node consists of a single CPU and 4 GPUs with 4 TB of RAM.
+Each GPU consists of two Graphics Compute Dies (GCD), which means that a node presents itself to device code as having 8 GPUs.
+That leaves us with a total count of 75,776 GCDs (with 75,264 reserved for compute only).
 
-Porting to a new system that is under active development brings many challenges. When the pre-Exascale development systems for Frontier became available, \vtkm frequently broke the compiler. At one point in the build, test, release cycle for the compilers, AMD had the \vtkm team building the compilers from bleeding-edge source to help debug the crashes. As the compilers stabilized, the team discovered another issue: astronomical compile times\footnote{While building on one of the pre-exascale systems, a second system came online, and development switched over to the newer system. A week later, the system admins for the pre-exascale systems called asking if they could kill a compile job as it was consuming all the memory on the login node. It turned out, a compile was still running on the initial system more than a week later.} When \vtkm was able to compile to completion, 20 hours to finish were not uncommon. The team would work with AMD to test a new compiler, and the cycle would begin anew. Currently, a full build of \vtkm with tests and benchmarks can be completed on Frontier in under 20 minutes.
+Porting to a new system that is under active development brings many challenges.
+When the pre-Exascale development systems for Frontier became available, \vtkm frequently broke the compiler.
+At one point in the build, test, release cycle for the compilers, AMD had the \vtkm team building the compilers from bleeding-edge source to help debug the crashes.
+
+As the compilers stabilized, the team discovered another issue: astronomical compile times.
+As an anecdote for these long compile times, while building on one of the pre-Exascale systems, a second system came online, and \vtkm development switched over to the newer system.
+A week later, the system administrators for the pre-Exascale systems called asking if they could kill a compile job as it was consuming all the memory on the login node.
+It turned out that a \vtkm compile was still running on the initial system more than a week later.
+More commonly, \vtkm took 20 hours to compile to completion.
+The team would work with AMD to test a new compiler, and the cycle would begin anew.
+Thankfully, these compile issues have been corrected.
+Currently, a full build of \vtkm with tests and benchmarks can be completed on Frontier in under 20 minutes.
 
 Along the way there were many issues that required solutions from AMD, Kokkos, and the \vtkm teams. Some examples are:
 \begin{itemize}
-    \item Compiler Errors
-    \item The Optimizer infinite looping - In addition to compiler fixes, the \vtkm source was broken into smaller units to reduce template instantiation
-    \item Parallel Sorting being Single-Threaded - Kokkos hadn't accounted for \vtkm workloads that used integral types (for example, sorting keys). A simple fix by the Kokkos team provided a 12x speedup in these workloads.
-    \item Function pointers not supported on AMD GPUs - \vtkm was re-written over several months to remove all calls through function pointers
+\item \emph{Compiler Errors}
+  \vtkm makes use of template metaprogramming \cite{Meyers2005}.
+  Although this code is fully C++14 compliant, it sometimes flexes the compiler in unexpected ways and may cause internal compiler errors.
+  Resolving these requires dialog with the compiler engineers.
+\item \emph{Optimizer Internal Looping}
+  In addition to compiler fixes, certain portions of the code found the compiler too aggresively optimizing the code in extended internal loops.
+  Hints were added to prevent the compiler from optimizing out of control.
+  Furthermore, the \vtkm source was broken into smaller units to reduce template instantiation and reduce compiler resource utilization as described in the \nameref{sec:filter-overhaul} section.
+\item \emph{Degradation of Sorting Parallelism}
+  The original Kokkos sorting algorithm had not accounted for \vtkm workloads that used integral types (for example, sorting keys).
+  A binning algorithm that worked well for uniformly distributed values degraded to a largely serial process when many values landed in a single bin.
+  A simple fix by the Kokkos team provided a $12\times$ speedup in these workloads.
+\item \emph{Function Pointers Unsupported on AMD GPUs}
+  \vtkm was modified over several months to remove all calls through function pointers as part of the removal of virtual methods (as described in the \nameref{sec:virtual-methods} section).
 \end{itemize}
 
-When Frontier became available to the various code teams, the \vtkm team at the University of Oregon undertook an experiment to establish \vtkm's scalability. The team created synthetic perlin noise data set consisting of 80 trillion cells, that was distributed for a full-system run using 9400 nodes and 74,088 GPUs (from above, each of the 37,000 MI250X GPUs presents as two GPUs due to the GCDs). The total time to render this dataset was 300ms.
+When Frontier became available to the various code teams, the \vtkm team at the University of Oregon undertook an experiment to establish \vtkm's scalability.
+The team created synthetic perlin noise data comprising 80 trillion cells that was distributed for a full-system run using 9,400 nodes and 74,088 GPU GCDs.
+The total time to render this dataset was 300ms.
+\ken{Add a figure.}
 
-\markb{De-snarkified. It's so vanilla now.}
+%\markb{De-snarkified. It's so vanilla now.}
+%\ken{Hey, lots of people like vanilla.}
 
 \subsection{Aurora}
 

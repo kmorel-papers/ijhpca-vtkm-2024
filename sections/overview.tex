@@ -1,9 +1,10 @@
 \section{Overview of \vtkm}
+\label{sec:overview}
 
 %\assign{Hank, editting pass (perhaps trimming)}
 
-The \vtkm library~\cite{Moreland2016} began via a research project funding
-from the 
+The \vtkm library~\cite{Moreland2016} began via a research project funded
+by the 
 Advanced Scientific Computer Research program within the Office of Science of the
 United States Department of Energy.
 The goal of the project was to enable scientific visualization on emerging HPC systems via
@@ -34,6 +35,10 @@ The framework separates code into two environments: control and execution.
 These correspond to the ``host'' and ``device,'' respectively, in a GPU development environment.
 This separation is maintained even when 
 there is not a clear separation between host and device, which is the case for some accelerators such as the Xeon Phi~\cite{Jeffers2016}.
+
+Algorithms in \vtkm execute parallel routines by wrapping them in a functional object that will be passed to the device in the execution environment where it will be run on many threads, and each instance will be fed a small, isolated portion of the data.
+This functional object is called a ``worklet'' because it works on a small portion of data.
+The worklet API in the execution environment is designed to promote thread safety to simplify implementation and prevent memory access hazards.
 %This design promotes developer efficiency, as
 %\vtkm simplifies implementations for current and future algorithms, and also provides 
 %automatic and efficient porting of these algorithms across different devices.
@@ -45,8 +50,8 @@ The entirety of \vtkm can be ported with a change to the device adapter.
 Further, all execution code (``device code'') is implemented with standard C++14,
 %and thus universal for any GPU device.
 and thus can be compiled for any device supporting the C++ language.
-\hank{Is this statement too strong?}
-\ken{I've qualified the statement to be more accurate. I am leaving out some qualifications about using only the subset of the language supported by the device compiler, but would that much detail be necessary here?}
+%\hank{Is this statement too strong?}
+%\ken{I've qualified the statement to be more accurate. I am leaving out some qualifications about using only the subset of the language supported by the device compiler, but would that much detail be necessary here?}
 
 \vtkm uses multiple approaches to achieve efficient parallelization.
 One approach is 
@@ -59,7 +64,7 @@ data parallel primitive methods~\cite{Blelloch1990}.
 Data parallel primitives allow algorithms to be implemented as a sequence of data parallel operations, such as scan, sort, or reduce.
 Early work explored how to implement scientific visualization using data parellel primitives~\cite{Lo2012}.
 To simplify the implementation further, \vtkm provides ``meta'' data parallel primitives~\cite{Moreland2021} that incorporate common patterns for scientific data that were demonstrated to be efficient.
-Finally, note the \vtkm design achieves developer efficiency --- 
+Finally, note that the \vtkm design achieves developer efficiency --- 
 streamlined algorithm development as well as 
 automatic
-porting to new architectures with an efficient implementation 
+porting to new architectures with an efficient implementation.

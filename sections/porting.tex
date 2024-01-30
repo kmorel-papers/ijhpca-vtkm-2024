@@ -3,34 +3,34 @@
 Although the pre-Exascale machines gave the \vtkm development team good experience porting to different processor architectures, the design of the Exascale machines Frontier and Aurora introduced new technical challenges.
 This section reports the most major modifications of \vtkm to make it feasible to run on the Exascale hardware.
 
-\ken{
-  Each subsection should be roughly 1/3 page.
-  (1 + 1/3 page total.)
-  The subsection should start with a paragraph defining the problem/motivation.
-  The following paragraph should give an overview of the approach.
-  The remaining paragraphs can go into technical challenges that were encountered and how they were addressed.
-}
+%% \ken{
+%%   Each subsection should be roughly 1/3 page.
+%%   (1 + 1/3 page total.)
+%%   The subsection should start with a paragraph defining the problem/motivation.
+%%   The following paragraph should give an overview of the approach.
+%%   The remaining paragraphs can go into technical challenges that were encountered and how they were addressed.
+%% }
 
 \subsection{Adopting Kokkos}
 \label{sec:adopting-kokkos}
 
-\assign{Sujin}
+%\assign{Sujin}
 
 %\sujin{
 %The first two paragraphs can be simplified by referring to the device adapter explanation in the \vtkm overview section
 %}
-As described in the overview of \vtkm,
+As described in the \nameref{sec:overview} section,
 one of the main features that \vtkm supports is ``write once, compile anywhere'' for its algorithms.
 %\vtkm filter’s are implemented in modern C++. The build system of \vtkm can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in \vtkm called the \texttt{DeviceAdapter}.
-A device portability layer called a device adapter allows algorithms written with standard C++ features run across all devices.
-These device adapters wrap a parallel execution capable device and provide functionalities for parallel-task scheduling, memory management, atomic operations, and several commonly used parallel algorithms like sort, reduce, etc, through a common interface.
+A device portability layer called a device adapter allows algorithms written with standard C++ features to run across all devices.
+These device adapters wrap a parallel device and provide functionalities for parallel-task scheduling, memory management, atomic operations, and several commonly used parallel algorithms like scan, sort, and reduce through a common interface.
 These are implemented on top of the native libraries used to program these devices.
 %At the most basic level, a device adapter only needs to provide support for memory management on the device, a way to execute an n-way, fine-grained, parallel task on the device, and atomic operations.
 %There are generic implementations for all of the parallel algorithms like sort, reduce, scan, etc, but it is possible to override these with specialized implementations for best performance.
 %The early versions of \vtkm had \texttt{DeviceAdapter} implementations for single threaded CPUs using standard C++, multithreaded CPUs using the threading building blocks library or OpenMP, and GPGPUs using CUDA.
 
-When the architectures for the initial two major Exascale machines, Aurora and Frontier, were announced, it was revealed that they would be using two completely new GPGPU architectures, with their own native libraries (SYCL and HIP).
-This would have required additional two new device adapter backends.
+When the architectures for the initial two major Exascale machines, Aurora and Frontier, were announced, it was revealed that they would be using two completely new GPGPU architectures with their own native libraries (SYCL and HIP).
+This would have required two new additional device adapter backends.
 Although the device adapter layer greatly simplifies the porting of \vtkm code, implementing device adapters themselves is not trivial.
 So, although it would be technically feasible to design device adapters for two new devices, it would have required significant effort.
 %Maintaining these backends together with the already existing backends was would require a lot of effort, especially for a project that is primarily concerned with implementing highly parallel visualization algorithms.
@@ -38,21 +38,37 @@ So, although it would be technically feasible to design device adapters for two 
 For these reasons, we looked towards another ECP project called Kokkos~\cite{Edwards2014, Trott2022}. Kokkos is a library for implementing performance portable applications in C++. Similar to \vtkm, Kokkos also supports multiple device backends, including HIP and SYCL used by the Exascale systems. So, with just one device adapter built on top of Kokkos, we are able to target both the machines.
 This allows us to write the \vtkm device adapter once to the Kokkos API and defer the work of interfacing with the different ECP device APIs to the Kokkos team, who were already doing this for other ECP projects.
 
-\ken{Is there anything more to be said about the interface? Was there anything particularly challenging? Any mismatch between the APIs? Any ``hacks'' that might have happened?}
-\sujin{I have added a few paragraphs bellow. It may be too detailed and probably needs some simplification}
+%\ken{Is there anything more to be said about the interface? Was there anything particularly challenging? Any mismatch between the APIs? Any ``hacks'' that might have happened?}
+%\sujin{I have added a few paragraphs bellow. It may be too detailed and probably needs some simplification}
 Since the exascale machines were based on completely new hardware, Kokkos was also in active development during the time we were developing the device adapter. Therefore, we faced a few challenges during the development and in the following paragraphs we will describe some of the most interesting challenges that we faced.
 
-\vtkm filters and algorithms are implemented as a sequence of some primitive parallel operations like sort, scan, reduce, etc. So, for good performance it is important that the implementation of these parallel primitives be as efficient as possible. \vtkm comes with generic implementations for these operations, but almost all of them are specialized by the device adapters for their specific hardware. For the kokkos backend, we relied on the implementations provided by the Kokkos library. However, we discovered that Kokkos did not have all of the primitives that \vtkm supported and, even when available, some implementations were not as full featured as supported by \vtkm. For example, at the time of development, Kokkos sort only supported floating point values, with the less-than operator for comparing values to sort. Whereas, \vtkm supported all primitive types and also non-primitive types with custom comparison operators. Therefore, we had to implement code-paths to use the Kokkos sort only for supported arguments and to fall-back on the generic \vtkm implementations for all other cases.
+As described previously, \vtkm filters and algorithms are implemented as a sequence of some primitive parallel operations like scan, sort, and reduce.
+So, for good performance it is imperative that the implementation of these parallel primitives be as efficient as possible.
+\vtkm comes with generic implementations for these operations, but many are not well optimized.
+Thus, device adapters specialize and optimize these operations for their specific hardware.
 
-Another issue we encountered were bugs in the Kokkos code base. During development we hit several critical bugs that would crash the program. Therefore, we also had to workaround these failing features with a fallback code path for failing conditions.
+For the Kokkos backend, we relied on the implementations provided by the Kokkos library.
+However, we discovered that Kokkos did not have all of the primitives that \vtkm supported and, even when available, some implementations were not as flexible as supported by \vtkm.
+For example, at the time of development, the Kokkos sort only supported floating point values with the less-than operator as the ordering comparator
+whereas \vtkm supported all primitive types and also non-primitive types with custom comparison operators.
+Therefore, we had to implement code-paths to use the Kokkos sort only for supported arguments and to fall-back on the generic \vtkm implementations for all other cases.
 
-We also faced challenges getting Kokkos library initialization to work with \vtkm. Kokkos expects to be initialized once at the beginning, with requests for the required features. This required us to rethink and overhaul our own initialization procedure so that all of our dependencies were initialized correctly and in the correct order.
+Another issue we encountered were bugs in the Kokkos code base. During development we hit several critical bugs that would crash the program. Therefore, we also had to workaround these failing features with a fallback code path for failing conditions until these issues could be addressed.
+
+We also faced challenges getting the Kokkos library initialization to work with \vtkm.
+Kokkos expects to be initialized exactly once with the feature configuraiton.
+In contrast, \vtkm's initialization is optional and allows configuration to be selected more flexibly.
+This required us to rethink and overhaul our own initialization procedure so all of our dependencies were initialized correctly and in the correct order.
+Furthermore, using \vtkm with other libraries that also use Kokkos is a valid use case, but only one of these libraries should initialize and finalize the Kokkos library.
+To prevent it from ``stealing'' the Kokkos initialization from other code, \vtkm delays Kokkos initialization until it is required, and detects whether the Kokkos system is already initialized.
+If \vtkm does initialize Kokkos, it establishes a callback at program termination to finalize the Kokkos library.
 
 \subsection{Addition and then Removal of Virtual Methods}
 \label{sec:virtual-methods}
 
-\assign{Ken}
+%\assign{Ken}
 
+\vtkm uses C++ templates to customize algorithms to different data types.
 Ideally, an algorithm
 %that operates on arrays
 will know the data types that it will operate on.
@@ -91,8 +107,9 @@ The typical solution is to copy the array of unknown type to an array of a known
 This feature was included into the filter interface overhaul, which is described in the next section.
 
 \subsection{Filter Interface Overhaul}
+\label{sec:filter-overhaul}
 
-\assign{Ollie}
+%\assign{Ollie}
 
 The majority of algorithms in \vtkm are contained in what is called a ``filter'' object.
 A filter takes a data set, performs some operations to modify it, and returns the resulting data set.
@@ -140,7 +157,7 @@ Since the filter execution methods are no longer template methods, they can be v
 Note that the filter methods in question are explicitly run in \vtkm's control environment, which means they will only be run on the CPU host of the machine.
 Previously discussed issues with virtual methods on GPUs do not apply here, so creating virtual methods here is not problematic.
 The virtual methods eliminate the need to use the CRTP technique.
-As a consequence, the whole filter class hierarchy has became \ollie{I believe it should be "has become"} non-template classes as well.
+As a consequence, the whole filter class hierarchy has become non-template classes as well.
 The library is no longer a header-only library and can be built as a traditional, pre-compiled library.
 The filter library is further divided into several modules with each separately compiled into a \texttt{.so} file.
 Applications now do not need to be compiled by a device compiler simply because they are using \vtkm.
@@ -148,9 +165,10 @@ Applications now do not need to be compiled by a device compiler simply because 
 The new filter structure, which removes exposed templates and encapsulates code into libraries, greatly reduces application build time because applications no longer have to compile many \vtkm templates.
 Rather, applications simply link to methods in the \vtkm library.
 We have also found that the new approach provides other compile-time saving opportunities within the library.
-For example, some filters incorporate the functionality of others as a subprocess. \ollie{"subprocess" is overloaded/misleading, replace with "subroutine"?}
+For example, some filters incorporate the functionality of others as a subroutine.
 The new filter structure allows filters to be compiled once and have their functionality leveraged by other filters.
 For example, the compilation of \vtkm's material interface reconstruction filter was reduced by a factor of 9 by linking to the mesh quality filter rather than recompiling it.
+
 The new filter structure also enables dividing the code into multiple translation units (i.e. separate C++ source files).
 Although this does not necessarily reduce the aggregate compile times, it more effectively leverages cores in parallel builds and reduces the possibility of compiler crashes from running out of resources.
 %\ollie{Ken can you add some concrete timing measure as you did before here?}
@@ -167,10 +185,10 @@ The DIY library changes consisted of adding routines that allow sending and rece
 
 The corresponding \vtkm changes consisted of modifying the \vtkm class that manages memory buffers and their location among host and devices.
 In particular, the changes overwrite the DIY serialization to directly pass these memory buffers to and from DIY.
-Additionally, a new CMake option named \texttt{VTKm\_ENABLE\_GPU\_MPI} that activates direct GPU-to-GPU communication of \vtkm buffer objects was added.
+Additionally, a new CMake option named \texttt{VTKm\_ENABLE\_GPU\_MPI} was added to activate direct GPU-to-GPU communication of \vtkm buffer objects.
 This in turn, enables direct GPU communication in \vtkm since most of the \vtkm storage entities are composed of \vtkm buffers. 
 
 The main challenge found during the implementation of this feature was maintaining compatibility with the Frontier target system.
-The problem was that the software stack in the target system was a moving target with frequent updates that in many cases required us to modify build and runtime parameters and, in some other cases, perform changes to the \vtkm and DIY source code.
+The problem was that the software stack was a moving target with frequent updates that in many cases required us to modify build and runtime parameters and, in some other cases, perform changes to the \vtkm and DIY source code.
 This challenge was minimized by provisioning the \vtkm Gitlab project with nightly jobs that build and run tests using this feature in the Frontier test-bed system.
 This allowed us to quickly identify problems arising in changes to either \vtkm's source code or the Frontier software stack.
