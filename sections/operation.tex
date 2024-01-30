@@ -2,7 +2,7 @@
 
 The ECP Exascale platforms are unique in many ways.
 The previous section summarized the major software development changes to prepare for the platform.
-In this section we discuss further technical challenges in compiling and executing VTK-m.
+In this section we discuss further technical challenges in compiling and executing \vtkm.
 
 \ken{
   Each subsection should be roughly 1/2 page.
@@ -10,23 +10,23 @@ In this section we discuss further technical challenges in compiling and executi
   The subsection shold start with a brief overview of the system, focusing on unique features.
   The following paragraphs should describe a challenge and then discuss how the challenge was addressed.
   Some examples include long compile times, errors for function pointer calls, compiler errors.
-  The section should end with a paragraph summarizing the current state of VTK-m on the system.
+  The section should end with a paragraph summarizing the current state of \vtkm on the system.
 }
 
 \subsection{Frontier}
 The first system delivered under the ECP program, Frontier, is also the first system to break the Exascale barrier with a score on the Linpack benchmark of 1.19 exaflops. Frontier is an AMD-based system with 9,472 (9408 for compute only) AMD Epyc CPUs ($>$ 600,000 cores) and 37,888 (37,632 compute) AMD MI250X GPUs ($>$ 8.3 million cores). The system is organized into 74 racks, each comprising 64 blades with 2 nodes each. A node consists of a single CPU and 4 GPUs with 4 TB of RAM. Each GPU consists of two Graphics Compute Dies (GCD), which means that a node present itself to device code as having 8 GPUs.
 
-Porting to a new system that is under active development brings many challenges. When the pre-Exascale development systems for Frontier became available, VTK-m frequently broke the compiler. At one point in the build, test, release cycle for the compilers, AMD had the VTK-m team building the compilers from bleeding-edge source to help debug the crashes. As the compilers stabilized, the team discovered another issue: astronomical compile times\footnote{While building on one of the pre-exascale systems, a second system came online, and development switched over to the newer system. A week later, the system admins for the pre-exascale systems called asking if they could kill a compile job as it was consuming all the memory on the login node. It turned out, a compile was still running on the initial system more than a week later.} When VTK-m was able to compile to completion, 20 hours to finish were not uncommon. The team would work with AMD to test a new compiler, and the cycle would begin anew. Currently, a full build of VTK-m with tests and benchmarks can be completed on Frontier in under 20 minutes.
+Porting to a new system that is under active development brings many challenges. When the pre-Exascale development systems for Frontier became available, \vtkm frequently broke the compiler. At one point in the build, test, release cycle for the compilers, AMD had the \vtkm team building the compilers from bleeding-edge source to help debug the crashes. As the compilers stabilized, the team discovered another issue: astronomical compile times\footnote{While building on one of the pre-exascale systems, a second system came online, and development switched over to the newer system. A week later, the system admins for the pre-exascale systems called asking if they could kill a compile job as it was consuming all the memory on the login node. It turned out, a compile was still running on the initial system more than a week later.} When \vtkm was able to compile to completion, 20 hours to finish were not uncommon. The team would work with AMD to test a new compiler, and the cycle would begin anew. Currently, a full build of \vtkm with tests and benchmarks can be completed on Frontier in under 20 minutes.
 
-Along the way there were many issues that required solutions from AMD, Kokkos, and the VTK-m teams. Some examples are:
+Along the way there were many issues that required solutions from AMD, Kokkos, and the \vtkm teams. Some examples are:
 \begin{itemize}
     \item Compiler Errors
-    \item The Optimizer infinite looping - In addition to compiler fixes, the VTK-m source was broken into smaller units to reduce template instantiation
-    \item Parallel Sorting being Single-Threaded - Kokkos hadn't accounted for VTK-m workloads that used integral types (for example, sorting keys). A simple fix by the Kokkos team provided a 12x speedup in these workloads.
-    \item Function pointers not supported on AMD GPUs - VTK-m was re-written over several months to remove all calls through function pointers
+    \item The Optimizer infinite looping - In addition to compiler fixes, the \vtkm source was broken into smaller units to reduce template instantiation
+    \item Parallel Sorting being Single-Threaded - Kokkos hadn't accounted for \vtkm workloads that used integral types (for example, sorting keys). A simple fix by the Kokkos team provided a 12x speedup in these workloads.
+    \item Function pointers not supported on AMD GPUs - \vtkm was re-written over several months to remove all calls through function pointers
 \end{itemize}
 
-When Frontier became available to the various code teams, the VTK-m team at the University of Oregon undertook an experiment to establish VTK-m's scalability. The team created synthetic perlin noise data set consisting of 80 trillion cells, that was distributed for a full-system run using 9400 nodes and 74,088 GPUs (from above, each of the 37,000 MI250X GPUs presents as two GPUs due to the GCDs). The total time to render this dataset was 300ms.
+When Frontier became available to the various code teams, the \vtkm team at the University of Oregon undertook an experiment to establish \vtkm's scalability. The team created synthetic perlin noise data set consisting of 80 trillion cells, that was distributed for a full-system run using 9400 nodes and 74,088 GPUs (from above, each of the 37,000 MI250X GPUs presents as two GPUs due to the GCDs). The total time to render this dataset was 300ms.
 
 \markb{De-snarkified. It's so vanilla now.}
 
@@ -36,8 +36,8 @@ When Frontier became available to the various code teams, the VTK-m team at the 
 
 The Aurora supercomputer, deployed at the Argonne Leadership Computing Facility (ALCF), is set to deliver over 2 exaflops of computational power. With 166 racks and 10,624 nodes, it houses 21,248 Intel Xeon CPU Max Series processors and 63,744 Intel Data Center GPU Max Series processors.
 
-Our journey initiated in August 2020, as we started building VTK-m on the Joint Laboratory for System Integration (JLSE) test platform at Argonne National Laboratory. We began our work using the Iris test platform, which consisted of 20 nodes equipped with Intel Gen 9 graphics processors. By September 2021, we transitioned to Arcticus, a testbed featuring 17 nodes equipped with 2x Intel Server GPUs code-named Arctic Sound. From August 2022, we conducted tests on Florentia, a test platform containing early versions of the Aurora GPUs. Finally, by January 2023, our efforts shifted to Sunspot, the Aurora test and development system, comprising 128 nodes with 2x Intel Xeon CPU Max Series processors and 6x Intel Data Center GPU Max Series processors. First light on Aurora occurred in August 2023.
+Our journey initiated in August 2020, as we started building \vtkm on the Joint Laboratory for System Integration (JLSE) test platform at Argonne National Laboratory. We began our work using the Iris test platform, which consisted of 20 nodes equipped with Intel Gen 9 graphics processors. By September 2021, we transitioned to Arcticus, a testbed featuring 17 nodes equipped with 2x Intel Server GPUs code-named Arctic Sound. From August 2022, we conducted tests on Florentia, a test platform containing early versions of the Aurora GPUs. Finally, by January 2023, our efforts shifted to Sunspot, the Aurora test and development system, comprising 128 nodes with 2x Intel Xeon CPU Max Series processors and 6x Intel Data Center GPU Max Series processors. First light on Aurora occurred in August 2023.
 
-Throughout our porting and testing efforts, we maintained close collaboration with Intel engineers and ALCF performance engineering staff. This collaboration led to the identification and resolution of several bugs in successive versions of the Intel oneAPI SDK. In November 2020, we completed a first set of early VTK-m benchmarks on Iris using Kokkos with OpenMP target offload. However, in February 2021, we encountered issues with virtual methods when transitioning to Kokkos with SYCL. Fortunately, the team anticipated this problem and had already started the process of replacing virtual methods (see the section {\it Removal of Virtual Methods}), and this issue was resolved soon after. Additionally, we worked with Intel to address long build times.
+Throughout our porting and testing efforts, we maintained close collaboration with Intel engineers and ALCF performance engineering staff. This collaboration led to the identification and resolution of several bugs in successive versions of the Intel oneAPI SDK. In November 2020, we completed a first set of early \vtkm benchmarks on Iris using Kokkos with OpenMP target offload. However, in February 2021, we encountered issues with virtual methods when transitioning to Kokkos with SYCL. Fortunately, the team anticipated this problem and had already started the process of replacing virtual methods (see the section {\it Removal of Virtual Methods}), and this issue was resolved soon after. Additionally, we worked with Intel to address long build times.
 
-By December 2023, the latest VTK-m and Kokkos development branch were successfully running on Aurora, achieving a 97\% success rate in Ctest regression tests. Porting, deployment, and integration efforts are set to continue on Aurora as we move beyond the ECP era.
+By December 2023, the latest \vtkm and Kokkos development branch were successfully running on Aurora, achieving a 97\% success rate in Ctest regression tests. Porting, deployment, and integration efforts are set to continue on Aurora as we move beyond the ECP era.

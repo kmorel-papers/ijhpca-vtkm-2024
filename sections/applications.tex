@@ -5,7 +5,7 @@
   (3.5 pages total.)
   The section should start with a layperson overview of what the domain problem is, what scientists are doing to study the problem.
   The section should then explain how visualization fits in to help.
-  Explain the technical solution of how VTK-m was integrated into the system and describe the final result.
+  Explain the technical solution of how \vtkm was integrated into the system and describe the final result.
   The section may repeat for multiple things that were done.
   For example the fusion reactor could first talk about in situ images and then Poincar\'{e} plots.
   The laser wakefields could talk about deliver of in situ images via Ascent and then about the customized particle advection.
@@ -55,7 +55,7 @@ The WDMApp team has a \poincare map code that runs on CPUs and takes several hou
 %Because of this cost, the generation \poincare maps required careful planning.
 The high cost of the analysis was due to two main factors. First, the large numbers of particles and intersections required previously mentioned, and second, the complexity of the magnetic field calculation.  In many applications of particle advection, the vector field is calculated at the nodes of each cell in the mesh. Linear interpolation within the cell is used to evaluate the magnetic field for the particle being advected. Because of the large number of advection steps required for each particle in the \poincare map, small errors can rapidly accumulate. These errors are compounded by the fact that the evaluation of the magnetic field requires a complex set of calculations requiring high-order interpolation of several quantities.
 
-Using VTK-m we can significantly accelerate the computation of \poincare maps using the parallelism available on GPUs. Because the trajectory of each particle is completely independent, the task can be parallelized over each particle. Using this approach, a \poincare map can be computed in under $3$ minutes. The wall-clock time for a typical WDMApp simulation step is between $1.5$ and $2$ minutes, which means that \poincare maps can be computed in situ in nearly real-time.
+Using \vtkm we can significantly accelerate the computation of \poincare maps using the parallelism available on GPUs. Because the trajectory of each particle is completely independent, the task can be parallelized over each particle. Using this approach, a \poincare map can be computed in under $3$ minutes. The wall-clock time for a typical WDMApp simulation step is between $1.5$ and $2$ minutes, which means that \poincare maps can be computed in situ in nearly real-time.
 When WDMApp is run, the workflow control system, EFFIS~\cite{Suchyta2022:effis}, allocates an additional 1 to 2 additional nodes for the \poincare map analysis. As a simulation step completes, EFFIS launches a \poincare analysis task on GPUs in the node in a round-robin fashion. This allows asynchronous analysis to be performed on the additional nodes while the simulation is running. Figure~\ref{fig:poincare} shows \poincare maps from two different timesteps from a simulation run at the OLCF.
 Real-time generation of \poincare maps provides the WDMApp team with unprecedented capability for analysis of magnetic fields in fusion simulations.
 
@@ -88,7 +88,7 @@ Besides increased beam energy, physicists study how to preserve beam properties 
   \includegraphics[width=0.49\linewidth]{figures/lwfa_particle_advection_front.png}%
   \includegraphics[width=0.49\linewidth]{figures/lwfa_particle_advection_side.png}
   \caption{Side- \& front-view of an laser wakefield with an injected electron bunch.
-  Particles are advected from \emph{a single snapshot} of the simulation in VTK-m.}
+  Particles are advected from \emph{a single snapshot} of the simulation in \vtkm.}
   \label{fig:lwfa_particle_advection}
 \end{figure*}
 
@@ -97,17 +97,17 @@ WarpX relies on multi-level parallelization: coarse parallelization relies on bl
 
 If WarpX would only rely on traditional post-processing workflows for visualization of the dynamics of Exascale simulations, the resulting multi-PByte scale output per simulation would severely limit the available snapshots and/or level of detail to visualize.
 Addressing this need, its in situ visualization interfaces to Ascent, for which utility routines were implemented in AMReX, which are specialized in WarpX ``diagnostics'' for application-specific descriptions.
-WarpX performs data preparation steps for diagnostics in situ and shares the respective AMReX memory buffers with zero-copy APIs through Conduit with Ascent, rendering with VTK-m in the same domain-decomposition and on the same compute device as the simulation itself.
+WarpX performs data preparation steps for diagnostics in situ and shares the respective AMReX memory buffers with zero-copy APIs through Conduit with Ascent, rendering with \vtkm in the same domain-decomposition and on the same compute device as the simulation itself.
 
 Realistic visualization of particle trajectories (advection) in a plasma or particle accelerator requires high temporal fidelity in traditional workflows, which can create a high data overhead.
-With VTK-m, an opportunity to significantly reduce data input for such workflows was identified, making use of a physics-motivated advection algorithm and the slowly changing nature of fields in a wakefield accelerator.
+With \vtkm, an opportunity to significantly reduce data input for such workflows was identified, making use of a physics-motivated advection algorithm and the slowly changing nature of fields in a wakefield accelerator.
 
 Plasma particles such as electrons and ions are inert and can be relativistic, which effectively changes their mass as they move.
 Traditional advection algorithms only made use of local properties of fields, without a history and inert nature of a streamline.
 As in a particle-in-cell algorithm, the realistic track of a charged plasma particle can be integrated following the Lorentz-Force, which interpolates six local field components ($E_{x,y,z}, B_{x,y,z}$) and advances the particles' momentum (inertia) and position with an explicit iteration scheme~\cite{Boris1970}.
 The updated momentum is tracked over the path of a streamline to account for the evolving particle.
 
-With this advection algorithm integrated in VTK-m, a snapshot of a simulation can be used to project the particles' physical position forward (and backward) for a meaningful time, under the realistic assumption that fields are quasi-static, i.e., do not change much in time (besides translation along an axis).
+With this advection algorithm integrated in \vtkm, a snapshot of a simulation can be used to project the particles' physical position forward (and backward) for a meaningful time, under the realistic assumption that fields are quasi-static, i.e., do not change much in time (besides translation along an axis).
 Figure~\ref{fig:lwfa_particle_advection} shows such particle trajectories of an off-axis injected electron beam in a wakefield, calculated from a single snapshot, reproducing physical betatron oscillation.
 
 \subsection{Impact Beyond ECP}
@@ -115,26 +115,26 @@ Figure~\ref{fig:lwfa_particle_advection} shows such particle trajectories of an 
 \assign{Jay}
 
 %\jay{discuss the applications/use cases outside of ECP}
-In addition to the applications mentioned above, VTK-m still serves as the key infrastructure for accelerating data analysis and visualization in various scientific applications through in situ visualization. This subsection lists several typical examples and illustrates how VTK-m is integrated into in situ scientific workflows outside of ECP.
+In addition to the applications mentioned above, \vtkm still serves as the key infrastructure for accelerating data analysis and visualization in various scientific applications through in situ visualization. This subsection lists several typical examples and illustrates how \vtkm is integrated into in situ scientific workflows outside of ECP.
 
 
-Before being selected as a project in ECP, VTK-m was a core component in Visualization for the Extreme-Scale Scientific Computation Ecosystem (XVis)~\cite{Moreland2019}. 
+Before being selected as a project in ECP, \vtkm was a core component in Visualization for the Extreme-Scale Scientific Computation Ecosystem (XVis)~\cite{Moreland2019}. 
 XVis focused on multiple ways to integrate in situ visualization with the simulation, extract key information, and decrease the data size for post-hoc processing. We noticed that 
-the ``in situ reduction + post hoc'' paradigm (shown in Figure~\ref{fig:vtkm_insitu_posthoc}) is adopted in multiple scientific domains within and outside of ECP, such as probability distribution function extraction of fields in combustion simulation~\cite{Ye2016}, and binning mechanism to reduce the data size of fusion simulation~\cite{Kress2018}. We use two recent works as examples to illustrate how VTK-m facilitates scientific workflows beyond ECP.
+the ``in situ reduction + post hoc'' paradigm (shown in Figure~\ref{fig:vtkm_insitu_posthoc}) is adopted in multiple scientific domains within and outside of ECP, such as probability distribution function extraction of fields in combustion simulation~\cite{Ye2016}, and binning mechanism to reduce the data size of fusion simulation~\cite{Kress2018}. We use two recent works as examples to illustrate how \vtkm facilitates scientific workflows beyond ECP.
 
 \begin{figure}[htb]
   \centering
 \includegraphics[width=0.60\linewidth]{figures/vtkm_insitu_posthoc}
-\caption{The ``in situ reduction + post hoc'' paradigm based on VTK-m.}
+\caption{The ``in situ reduction + post hoc'' paradigm based on \vtkm.}
 \label{fig:vtkm_insitu_posthoc}
 \end{figure}
 
 
 Nyx is a cosmological simulation that aims to solve compressible hydrodynamics with N-body treatment of the dark matter. Each simulation run may contain hundreds of time steps with multiple sets of simulation input parameters. The raw data size is usually hundreds of TBs to several PBs, which causes challenges to process data in post-processing. 
-VTK-m is used as in situ analysis to extract the statistical properties of the down-sampled data to hugely reduce the size of raw data. The associated statistics model can be used to construct the data based on prior knowledge in post-processing with low data reconstruction error~\cite{Wang2019}.
+\vtkm is used as in situ analysis to extract the statistical properties of the down-sampled data to hugely reduce the size of raw data. The associated statistics model can be used to construct the data based on prior knowledge in post-processing with low data reconstruction error~\cite{Wang2019}.
 
 Eddy detection and tracking plays a key role in analysing the data generated by ocean simulation. Understanding the characteristics of eddies can help scientists to explain the regional air-sea interactions.
-The VTK-m streamline filter can be used as an in situ analysis to generate streamline data used for interactive post-hoc analysis~\cite{Han2022}. With the help of VTK-m, the associated eddy analysis workflow can improve the interaction speed, reduce data storage, and meet the
+The \vtkm streamline filter can be used as an in situ analysis to generate streamline data used for interactive post-hoc analysis~\cite{Han2022}. With the help of \vtkm, the associated eddy analysis workflow can improve the interaction speed, reduce data storage, and meet the
 needs of real-time visual analysis interaction.  
 
 % TODO, add a summary figure, altough not use ECP solution, vtk-m play key role in developing insitu solution

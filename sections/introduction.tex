@@ -5,7 +5,7 @@
 \begin{figure*}[tb]
   \includegraphics[width=\textwidth]{figures/vtkm-workflow}
   \caption{
-    Workflow of an algorithm implemented in VTK-m.
+    Workflow of an algorithm implemented in \vtkm.
     The ``control environment,'' which runs on a single thread on the host, manages data organization and orchestrates operations.
     The ``execution environment,'' which runs on many threads on the device, performs parallel execution across elements of data.
     A ``device adapter'' manages data movement and control flow between these two environments.
@@ -39,17 +39,17 @@ the visualization and analysis approaches to themselves utilize significant comp
 Most commonly, this computation is done using the same supercomputer and hardware that produced
 the data in the first place.
 
-VTK-m is a software library that makes it possible to process data sets from exacale computers
+\vtkm is a software library that makes it possible to process data sets from exacale computers
 by implementing classic scientific visualization algorithms redesigned for heavily threaded environments like GPUs.
-VTK-m also provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
-At the inception of ECP, VTK-m was the byproduct of a research project.
-ECP provided the investment to promote VTK-m to production software.
+\vtkm also provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
+At the inception of ECP, \vtkm was the byproduct of a research project.
+ECP provided the investment to promote \vtkm to production software.
 This software that now serves as the underlying visualization implementation across all ECP.
-VTK-m is currently used by ParaView, VisIt, and Ascent to execute visualization algorithms on Exascale platforms and others using GPU processing.
+\vtkm is currently used by ParaView, VisIt, and Ascent to execute visualization algorithms on Exascale platforms and others using GPU processing.
 
 This paper provides an overview of the main challenges encountered to make visualization available at the Exascale.
-It begins with a brief overview of the VTK-m framework.
+It begins with a brief overview of the \vtkm framework.
 It then discuss the largest porting challenges encountered during ECP as the hardware for the final Exascale machines differed dramatically from the pre-Exascale machines.
-This is followed by a summary of the performance of VTK-m on the Exascale hardware.
-Finally, the paper concludes with a discussion on the software engineering required to integrate VTK-m into usable visualization tools and successes with using VTK-m to solve problems in real science applications.
+This is followed by a summary of the performance of \vtkm on the Exascale hardware.
+Finally, the paper concludes with a discussion on the software engineering required to integrate \vtkm into usable visualization tools and successes with using \vtkm to solve problems in real science applications.
 This includes porting challenges, performance testing and improvement, integration with other ECP software technologies, and the support of ECP applications.

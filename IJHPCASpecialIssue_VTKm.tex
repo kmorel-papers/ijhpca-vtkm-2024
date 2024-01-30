@@ -5,6 +5,7 @@
 \usepackage[colorlinks,bookmarksopen,bookmarksnumbered,citecolor=red,urlcolor=red]{hyperref}
 
 \usepackage{tabularx}
+\usepackage{xspace}
 
 \usepackage[inline]{enumitem}
 
@@ -59,6 +60,8 @@
 
 \title{Visualization at the Exascale: Making it all Work with VTK-m}
 
+\newcommand*{\vtkm}{\mbox{VTK-m}\xspace}
+
 \author{%
   Kenneth~Moreland,\affilnum{1}
   Tushar~M.~Athawale,\affilnum{1}
@@ -100,16 +103,16 @@
 
 \begin{abstract}
   %\assign{Hank, make an editing pass}
-  VTK-m is a software library that enables scientific visualization on Exascale machines.
+  \vtkm is a software library that enables scientific visualization on Exascale machines.
   This is challenging since 
   Exascale machines use GPUs as accelerator processors to provide the highest computational throughput available today, necessitating an algorithmic design that often deviates from previous generations of high-performance computers. 
   %\ollie{"classical computer" v.s. "quantum computer" ???}
   %\ken{Good point. I've rephrased.}
-  In addition to providing scientific visualization algorithms for GPUs and other accelerator processors, VTK-m provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
+  In addition to providing scientific visualization algorithms for GPUs and other accelerator processors, \vtkm provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
   This paper captures the main challenges encountered to make scientific visualization available at the Exascale.
   We document the surprises and obstacles of moving from pre-Exascale platforms to the final Exascale designs and the performance on those systems.
-  We also report on the integration of VTK-m with other Exascale software technologies.
-  Finally, we show how VTK-m helps scientific discovery for applications like fusion and particle acceleration that leverage an Exascale supercomputer.
+  We also report on the integration of \vtkm with other Exascale software technologies.
+  Finally, we show how \vtkm helps scientific discovery for applications like fusion and particle acceleration that leverage an Exascale supercomputer.
 
   %\ken{
   %  Information about the IJHPCA special issue:\\
