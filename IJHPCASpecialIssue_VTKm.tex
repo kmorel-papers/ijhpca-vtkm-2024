@@ -102,8 +102,9 @@
   %\assign{Hank, make an editing pass}
   VTK-m is a software library that enables scientific visualization on Exascale machines.
   This is challenging since 
-  Exascale machines use GPUs as accelerator processors to provide the highest computational throughput available today, necessitating an algorithmic design that often deviates from a classical computer.
-%
+  Exascale machines use GPUs as accelerator processors to provide the highest computational throughput available today, necessitating an algorithmic design that often deviates from previous generations of high-performance computers. 
+  %\ollie{"classical computer" v.s. "quantum computer" ???}
+  %\ken{Good point. I've rephrased.}
   In addition to providing scientific visualization algorithms for GPUs and other accelerator processors, VTK-m provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
   This paper captures the main challenges encountered to make scientific visualization available at the Exascale.
   We document the surprises and obstacles of moving from pre-Exascale platforms to the final Exascale designs and the performance on those systems.

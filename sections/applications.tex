@@ -73,22 +73,15 @@ WarpX is a particle-in-cell simulation code, which was awarded the 2022 ACM Gord
 As part of ECP, WarpX was developed as a new application succeeding its predecessor Warp~\cite{Vay2013} with the goal to study advanced particle acceleration in laser-driven plasma wakefields towards future high-energy physics colliders~\cite{Albert2021}.
 Beyond that, WarpX is used to describe kinetic physics in particle accelerators, laser-plasmas, fusion devices, inertial confinement fusion and astrophysical plasmas, and it is used to model microelectronics~\cite{Yao2022}.
 
-Figure~\ref{fig:warpx_lwfa} is an in situ rendering of a \emph{staged} laser wakefield accelerator in a boosted reference frame~\cite{Vay2011}.
+Figures \ref{fig:warpx_highres} and \ref{fig:warpx_lowres} are in situ renderings of a \emph{staged} laser wakefield accelerator in a boosted reference frame~\cite{Vay2011}.
 An electron beam (orange-green) is accelerated to the right through multiple stages to high energies.
-In the plasma stages (grey), the strong traversal focusing fields are shown in red-blue.
+In the plasma stages (gray), the strong traversal focusing fields are shown in red-blue.
 
 In the staging approach, a particle beam is accelerated subsequently through multiple plasma elements.
 In each stage, an ultra-intense laser pulse is exciting a plasma wakefield.
 This depletes the laser pulse's energy to generate very strong electric fields in the plasma wake, which can be used to accelerate an injected electron beam.
 The acceleration itself can be three to four orders of magnitude more compact than relying on state-of-the-art radio-frequency accelerator elements.
 Besides increased beam energy, physicists study how to preserve beam properties essential for transport, focusing (e.g., emittance) and applications (e.g., charge and current).
-
-WarpX features advanced techniques such as GPU-acceleration for three vendors, mesh-refinement capabilities, dynamic load balancing, and unique advanced numerical solvers.
-WarpX relies on multi-level parallelization: coarse parallelization relies on block-structured domain-decomposition with MPI using the AMReX library~\cite{Zhang2019} and compute acceleration with CUDA/HIP/SYCL or OpenMP, so that simulations are scalable to the world's largest supercomputers.
-
-If WarpX would only rely on traditional post-processing workflows for visualization of the dynamics of Exascale simulations, the resulting multi-PByte scale output per simulation would severely limit the available snapshots and/or level of detail to visualize.
-Addressing this need, its in situ visualization interfaces to Ascent, for which utility routines were implemented in AMReX, which are specialized in WarpX ``diagnostics'' for application-specific descriptions.
-WarpX performs data preparation steps for diagnostics in situ and shares the respective AMReX memory buffers with zero-copy APIs through Conduit with Ascent, rendering with VTK-m in the same domain-decomposition and on the same compute device as the simulation itself.
 
 \begin{figure*}[ht]
   \centering
@@ -98,6 +91,13 @@ WarpX performs data preparation steps for diagnostics in situ and shares the res
   Particles are advected from \emph{a single snapshot} of the simulation in VTK-m.}
   \label{fig:lwfa_particle_advection}
 \end{figure*}
+
+WarpX features advanced techniques such as GPU-acceleration for three vendors, mesh-refinement capabilities, dynamic load balancing, and unique advanced numerical solvers.
+WarpX relies on multi-level parallelization: coarse parallelization relies on block-structured domain-decomposition with MPI using the AMReX library~\cite{Zhang2019} and compute acceleration with CUDA/HIP/SYCL or OpenMP, so that simulations are scalable to the world's largest supercomputers.
+
+If WarpX would only rely on traditional post-processing workflows for visualization of the dynamics of Exascale simulations, the resulting multi-PByte scale output per simulation would severely limit the available snapshots and/or level of detail to visualize.
+Addressing this need, its in situ visualization interfaces to Ascent, for which utility routines were implemented in AMReX, which are specialized in WarpX ``diagnostics'' for application-specific descriptions.
+WarpX performs data preparation steps for diagnostics in situ and shares the respective AMReX memory buffers with zero-copy APIs through Conduit with Ascent, rendering with VTK-m in the same domain-decomposition and on the same compute device as the simulation itself.
 
 Realistic visualization of particle trajectories (advection) in a plasma or particle accelerator requires high temporal fidelity in traditional workflows, which can create a high data overhead.
 With VTK-m, an opportunity to significantly reduce data input for such workflows was identified, making use of a physics-motivated advection algorithm and the slowly changing nature of fields in a wakefield accelerator.
@@ -119,8 +119,15 @@ In addition to the applications mentioned above, VTK-m still serves as the key i
 
 
 Before being selected as a project in ECP, VTK-m was a core component in Visualization for the Extreme-Scale Scientific Computation Ecosystem (XVis)~\cite{Moreland2019}. 
-XVis focused on multiple ways to integrate in situ visualization with the simulation, extract key information, and decrease the data size for post-hoc processing.
-The ``in situ reduction + post hoc'' paradigm is widely adopted in multiple scientific domains, such as probability distribution function (PDF) extraction of fields in combustion simulation~\cite{Ye2016}, and binning mechanism to reduce the data size of fusion simulation~\cite{Kress2018}. 
+XVis focused on multiple ways to integrate in situ visualization with the simulation, extract key information, and decrease the data size for post-hoc processing. We noticed that 
+the ``in situ reduction + post hoc'' paradigm (shown in Figure~\ref{fig:vtkm_insitu_posthoc}) is adopted in multiple scientific domains within and outside of ECP, such as probability distribution function extraction of fields in combustion simulation~\cite{Ye2016}, and binning mechanism to reduce the data size of fusion simulation~\cite{Kress2018}. We use two recent works as examples to illustrate how VTK-m facilitates scientific workflows beyond ECP.
+
+\begin{figure}[htb]
+  \centering
+\includegraphics[width=0.60\linewidth]{figures/vtkm_insitu_posthoc.drawio.pdf}
+\caption{The ``in situ reduction + post hoc'' paradigm based on VTK-m.}
+\label{fig:vtkm_insitu_posthoc}
+\end{figure}
 
 
 Nyx is a cosmological simulation that aims to solve compressible hydrodynamics with N-body treatment of the dark matter. Each simulation run may contain hundreds of time steps with multiple sets of simulation input parameters. The raw data size is usually hundreds of TBs to several PBs, which causes challenges to process data in post-processing. 
@@ -130,4 +137,4 @@ Eddy detection and tracking plays a key role in analysing the data generated by 
 The VTK-m streamline filter can be used as an in situ analysis to generate streamline data used for interactive post-hoc analysis~\cite{Han2022}. With the help of VTK-m, the associated eddy analysis workflow can improve the interaction speed, reduce data storage, and meet the
 needs of real-time visual analysis interaction.  
 
-% TODO, add summary figure, altough not use ECP solution, vtk-m play key role in developing insitu solution
+% TODO, add a summary figure, altough not use ECP solution, vtk-m play key role in developing insitu solution

@@ -17,10 +17,22 @@ In this section we discuss the major visualization tools we integrated VTK-m wit
 
 \subsection{ParaView}
 
+\begin{figure}[htb]
+  \includegraphics[width=\linewidth]{figures/paraview-crusher.png}
+  \includegraphics[width=\linewidth]{figures/threshold-vtkm-gpu-usage-crusher-small.png}
+  \caption{
+    ParaView, with integrated VTK-m accelerated filters, running on Crusher, an early access test bed for the Frontier system.
+    VTK-m is using the Kokkos device adapter.
+    The output of rocm-smi command is being used to verify and monitor GPU usage by the filters.
+    %\ken{I think it would be better to move this figure (or something like it) to the ParaView section.}
+  }
+  \label{fig:paraview-crusher}
+\end{figure}
+
 \assign{Sujin}
 The VTK-m library provides high performance implementations of several visualization algorithms for highly parallel processors. However, features such as file IO, rendering, and pipeline management, which are essential parts of a full featured visualization toolkit, are beyond the scope of VTK-m. On the other hand, ParaView is a mature visualization software that has robust implementation of these features. Therefore, we wanted to integrate VTK-m into ParaView, such that ParaView can use VTK-m filters to accelerate its operations when a VTK-m implementation and highly parallel hardware is available.
 
-We wanted to make the use of VTK-m accelerated filters as transparent as possible. Therefore, we have chosen to integrate VTK-m using VTK and ParaView's factory-instantiation feature. Filters in ParaView are instantiated via a factory method. There can be multiple implementations available for a filter, and the factory method chooses an appropriate implementation at run-time based on some criteria. With this method we can override the default ParaView filters with VTK-m based filters. Currently, VTK-m accelerated overrides are available for some commonly used filters such as Contour, Threshold, and Gradient. Adding overrides for more filters is a fairly straightforward process as discussed in the following paragraphs.
+We wanted to make the use of VTK-m accelerated filters as transparent as possible. Therefore, we have chosen to integrate VTK-m using VTK and ParaView's factory-instantiation feature. Since ParaView is implemented on top of VTK and internally relies on VTK filters, both VTK and ParaView will be mentioned interchangeably in this section. Filters in ParaView are instantiated via a factory method. There can be multiple implementations available for a filter, and the factory method chooses an appropriate implementation at run-time based on some criteria. With this method we can override the default ParaView filters with VTK-m based filters. Currently, VTK-m accelerated overrides are available for some commonly used filters such as Contour, Threshold, and Gradient. Adding overrides for more filters is a fairly straightforward process as discussed in the following paragraphs.
 
 To override a ParaView filter, we first need to implement a VTK-m wrapper filter in VTK, that provides the interface of the base VTK/ParaView filter and uses VTK-m filters and routines for its operation. The following steps give a high-level overview of how a VTK-m wrapper filter is implemented in VTK/ParaView.
 \begin{enumerate}
@@ -33,16 +45,19 @@ To override a ParaView filter, we first need to implement a VTK-m wrapper filter
 
 For the dataset conversion from VTK to VTK-m and back, we have implemented several helper routines. These are zero-copy operations for most cases as only the ownership of the pointers to the underlying resources are transferred wherever possible. Even copy from host to device and device to host are minimized with the use of a VTK-m dataset wrapper in VTK called \texttt{vtkmDataSet}, that implements the interface of \texttt{vtkDataSet} and only copies the data when required. Another commonly used ParaView functionality of computing the range of the various fields of a dataset has also been accelerated using VTK-m to speed up the computation and to avoid memory transfer from device to host.
 
-\ken{This last paragraph might be more detail than needed.}
-The wrapper filter needs to be registered with the factory for the factory instantiation to work. This is done at the build configuration using the CMake function:
-\texttt{\_vtkm\_add\_override("vtkBaseFilter" "vtkmAcceleratedFilter")} Then, the accelerated filters need to be enabled using the CMake option \texttt{VTK\_ENABLE\_VTKM\_OVERRIDES}. They can also be turned on or off during run time through ParaView settings as shown in Figure~\ref{fig:paraview_settings}.
+Figure~\ref{fig:paraview-crusher} shows an example of ParaView running of Crusher, which is an early access test bed for the Frontier system, with VTK-m accelerated filters. As described in section \nameref{sec:adopting-kokkos}, VTK-m is using the Kokkos device adapter backend on this hardware. The bottom of the image shows the output of the \texttt(rocm-smi) command, which used to verify and monitor the GPU usage by the filters.
 
 \begin{figure}[htb]
   \includegraphics[width=\linewidth]{figures/pv-override-settings.png}
-  \caption{Left: ParaView setting \texttt{Use Accelerated Filters} can be used to turn on or off accelrated filters at run-time. This setting is shown irrespective of whether ParaView was built with the override support or not. Right: The availability of the accelerated filters can be found under \texttt{About ParaView/Client Information} for clients and \texttt{About ParaView/Connection Information} for servers.}
+  \caption{Left: ParaView setting \texttt{Use Accelerated Filters} can be used to turn on or off accelerated filters overrides at run-time. This setting is shown irrespective of whether ParaView was built with the override support or not. Right: The availability of the accelerated filters overrides can be found under \texttt{About ParaView/Client Information} for clients and \texttt{About ParaView/Connection Information} for servers.}
   \label{fig:paraview_settings}
 \end{figure}
 
+\ken{This last paragraph might be more detail than needed.}
+% The wrapper filter needs to be registered with the factory for the factory instantiation to work. This is done at the build configuration using the CMake function:
+% \texttt{\_vtkm\_add\_override("vtkBaseFilter" "vtkmAcceleratedFilter")} Then, the accelerated filters need to be enabled using the CMake option \texttt{VTK\_ENABLE\_VTKM\_OVERRIDES}. They can also be turned on or off during run time through ParaView settings as shown in Figure~\ref{fig:paraview_settings}.
+\sujin{Ken, please review if the changes are satisfactory}
+This feature is now available in the recent releases of ParaView, if the feature was enabled during building. If enabled, this feature can also be turned on or off at run-time using ParaView settings as described in Figure~\ref{fig:paraview_settings}.
 
 \subsection{VisIt}
 
@@ -65,18 +80,10 @@ Ascent is a lightweight, in situ visualization and analysis library designed for
 
 VTK-m, while optional, is a main dependency for Ascent, as it is currently the only option for rendering low-order mesh data offered in Ascent, and provides filters for transforming and/or analyzing the simulation data e.g. Slice, Histogram, Isosurface. Ascent also takes advantage of VTK-m's zero-copy capabilities as well as its ability to pass device-pointers, allowing the simulation data to remain on the device and be passed directly to Ascent, and then on to VTK-m, without having to be transferred to host memory. VTK-m has been integrated into Ascent via a (previously external) library called VTK-h (the ``h'' meaning ``hybrid''), that combines VTK-m's shared-memory performant filters with MPI's efficient distributed-memory coordination. 
 
-Figures~\ref{fig:warpx_lowres} and~\ref{fig:warpx_highres} show in situ renderings of the WarpX simulation (see section \textit{Laser Wakefield Acceleration}), generated by Ascent, executing on OLCF's Exascale supercomputer Frontier.
+Figures~\ref{fig:warpx_highres} and~\ref{fig:warpx_lowres} show in situ renderings of the WarpX simulation (see section \textit{Laser Wakefield Acceleration}), generated by Ascent, executing on OLCF's Exascale supercomputer Frontier.
 The simulation was executed in two resolutions: 578.8 million cells across 552 GPUs on 69 nodes and 4.63 billion cells across 4,416 GPUs on 552 nodes.
 Ascent used VTK-m filters to upscale the data along multiple axes, generate isosurfaces, and clip several fields, before using VTK-m's raytracer and volume renderer to generate the final images.
 To guarantee performance, VTK-m uses the Kokkos backend for AMD GPUs. 
-
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\linewidth]{figures/ey_009300.png}
-    \caption{WarpX in situ visualization of a laser-wakefield accelerator on 69 nodes containing 552 GPUs on Frontier using Ascent and VTK-m. This shows a later timestep of the simulation at low resolution.}
-    \label{fig:warpx_lowres}
-\end{figure}
 
 \begin{figure}
     \centering
@@ -85,6 +92,12 @@ To guarantee performance, VTK-m uses the Kokkos backend for AMD GPUs.
     \label{fig:warpx_highres}
 \end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/ey_009300.png}
+    \caption{WarpX in situ visualization of a laser-wakefield accelerator on 69 nodes containing 552 GPUs on Frontier using Ascent and VTK-m. This shows a later timestep of the simulation at low resolution.}
+    \label{fig:warpx_lowres}
+\end{figure}
 
 %\begin{figure}[htb]
 %  \includegraphics[width=\linewidth]{figures/warpx_stages_lwfa.png}
@@ -101,7 +114,7 @@ Integrating a VTK-m filter into visualization software such as ParaView and VisI
 
 Our ultimate goal is to make VTK-m filters practical for real use and to put tools in the hands of end users in a timely manner.
 An alternate approach to a full integration through the visualization software stack is to provide this functionality instead through a plugin, which is supported by tools like ParaView and VisIt.
-For the plugin approach, the VTK-m filter still needs to be wrapped inside a VTK filter, but the time needed for the software integration and testing in VTK and ParaView can be bypassed.       
+For the plugin approach, the VTK-m filter still needs to be wrapped inside a VTK filter, but the time needed for the software integration and testing in VTK and ParaView can be bypassed. Figure~\ref{fig:uncertainty-plugin} illustrates the VTK-m isosurface uncertainty filter~\cite{Wang2023, Athawale21} made available in ParaView using the plugin method. The isosurface uncertainty filter is one of the major successes of the VTK-m library, as it is the first production-level uncertainty visualization filter deployed for efficient large-data analysis. Using the plugin method depicted in Figure~\ref{fig:uncertainty-plugin}, VTK-m filters can be easily coupled with existing filters in ParaView for faster and better data understanding.       
 
 \begin{figure}[htb]
   \includegraphics[width=\linewidth]{figures/isosurfaceUncertaintyPlugin.png}
@@ -109,7 +122,7 @@ For the plugin approach, the VTK-m filter still needs to be wrapped inside a VTK
   \label{fig:uncertainty-plugin}
 \end{figure}
 
-Figure~\ref{fig:uncertainty-plugin} illustrates the VTK-m isosurface uncertainty filter made available in ParaView using the plugin method. The isosurface uncertainty filter~\cite{Wang2023} is one of the major successes of the VTK-m library, as it is the first production-level uncertainty visualization filter deployed for efficient large-data analysis. The filter enables interactive exploration of uncertainty in marching cubes topology cases~\cite{Athawale21} and overcomes difficulties related to the slowness of uncertainty computations. \tushar{Should we add here a link to the uncertainty filter in the master branch and add Nrushad as author?}. Using the plugin method depicted in Figure~\ref{fig:uncertainty-plugin}, VTK-m filters can be easily coupled with existing filters in ParaView for faster and better data understanding.
+
 
 %% \ken{
 %%   Talk about how you can deliver new functionality to these tools outside of the pipeline of implement in VTK-m $\rightarrow$ VTK $\rightarrow$ Tool.

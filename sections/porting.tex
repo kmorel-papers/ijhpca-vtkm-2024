@@ -12,20 +12,9 @@ This section reports the most major modifications of VTK-m to make it feasible t
 }
 
 \subsection{Adopting Kokkos}
+\label{sec:adopting-kokkos}
 
 \assign{Sujin}
-
-\begin{figure}[htb]
-  \includegraphics[width=\linewidth]{figures/paraview-crusher.png}
-  \includegraphics[width=\linewidth]{figures/threshold-vtkm-gpu-usage-crusher-small.png}
-  \caption{
-    ParaView, with integrated VTK-m accelerated filters, running on Crusher.
-    VTK-m is using the Kokkos device adapter.
-    The output of rocm-smi command is being used to verify and monitor GPU usage by the filters.
-    \ken{I think it would be better to move this figure (or something like it) to the ParaView section.}
-  }
-  \label{fig:paraview-crusher}
-\end{figure}
 
 %\sujin{
 %The first two paragraphs can be simplified by referring to the device adapter explanation in the VTK-m overview section
@@ -34,7 +23,7 @@ As described in the overview of VTK-m,
 one of the main features that VTK-m supports is ``write once, compile anywhere'' for its algorithms.
 %VTK-m filter’s are implemented in modern C++. The build system of VTK-m can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in VTK-m called the \texttt{DeviceAdapter}.
 A device portability layer called a device adapter allows algorithms written with standard C++ features run across all devices.
-These device adapters wrap a parallel execution capable device and provide functionalities for parallel-task scheduling, memory management, and several commonly used parallel algorithms like sort, reduce, etc, through a common interface.
+These device adapters wrap a parallel execution capable device and provide functionalities for parallel-task scheduling, memory management, atomic operations, and several commonly used parallel algorithms like sort, reduce, etc, through a common interface.
 These are implemented on top of the native libraries used to program these devices.
 %At the most basic level, a device adapter only needs to provide support for memory management on the device, a way to execute an n-way, fine-grained, parallel task on the device, and atomic operations.
 %There are generic implementations for all of the parallel algorithms like sort, reduce, scan, etc, but it is possible to override these with specialized implementations for best performance.
@@ -50,7 +39,14 @@ For these reasons, we looked towards another ECP project called Kokkos~\cite{Edw
 This allows us to write the VTK-m device adapter once to the Kokkos API and defer the work of interfacing with the different ECP device APIs to the Kokkos team, who were already doing this for other ECP projects.
 
 \ken{Is there anything more to be said about the interface? Was there anything particularly challenging? Any mismatch between the APIs? Any ``hacks'' that might have happened?}
+\sujin{I have added a few paragraphs bellow. It may be too detailed and probably needs some simplification}
+Since the exascale machines were based on completely new hardware, Kokkos was also in active development during the time we were developing the device adapter. Therefore, we faced a few challenges during the development and in the following paragraphs we will describe some of the most interesting challenges that we faced.
 
+VTK-m filters and algorithms are implemented as a sequence of some primitive parallel operations like sort, scan, reduce, etc. So, for good performance it is important that the implementation of these parallel primitives be as efficient as possible. VTK-m comes with generic implementations for these operations, but almost all of them are specialized by the device adapters for their specific hardware. For the kokkos backend, we relied on the implementations provided by the Kokkos library. However, we discovered that Kokkos did not have all of the primitives that VTK-m supported and, even when available, some implementations were not as full featured as supported by VTK-m. For example, at the time of development, Kokkos sort only supported floating point values, with the less-than operator for comparing values to sort. Whereas, VTK-m supported all primitive types and also non-primitive types with custom comparison operators. Therefore, we had to implement code-paths to use the Kokkos sort only for supported arguments and to fall-back on the generic VTK-m implementations for all other cases.
+
+Another issue we encountered were bugs in the Kokkos code base. During development we hit several critical bugs that would crash the program. Therefore, we also had to workaround these failing features with a fallback code path for failing conditions.
+
+We also faced challenges getting Kokkos library initialization to work with VTK-m. Kokkos expects to be initialized once at the beginning, with requests for the required features. This required us to rethink and overhaul our own initialization procedure so that all of our dependencies were initialized correctly and in the correct order.
 
 \subsection{Addition and then Removal of Virtual Methods}
 \label{sec:virtual-methods}
@@ -144,7 +140,7 @@ Since the filter execution methods are no longer template methods, they can be v
 Note that the filter methods in question are explicitly run in VTK-m's control environment, which means they will only be run on the CPU host of the machine.
 Previously discussed issues with virtual methods on GPUs do not apply here, so creating virtual methods here is not problematic.
 The virtual methods eliminate the need to use the CRTP technique.
-As a consequence, the whole filter class hierarchy has became non-template classes as well.
+As a consequence, the whole filter class hierarchy has became \ollie{I believe it should be "has become"} non-template classes as well.
 The library is no longer a header-only library and can be built as a traditional, pre-compiled library.
 The filter library is further divided into several modules with each separately compiled into a \texttt{.so} file.
 Applications now do not need to be compiled by a device compiler simply because they are using VTK-m.
@@ -152,7 +148,7 @@ Applications now do not need to be compiled by a device compiler simply because 
 The new filter structure, which removes exposed templates and encapsulates code into libraries, greatly reduces application build time because applications no longer have to compile many VTK-m templates.
 Rather, applications simply link to methods in the VTK-m library.
 We have also found that the new approach provides other compile-time saving opportunities within the library.
-For example, some filters incorporate the functionality of others as a subprocess.
+For example, some filters incorporate the functionality of others as a subprocess. \ollie{"subprocess" is overloaded/misleading, replace with "subroutine"?}
 The new filter structure allows filters to be compiled once and have their functionality leveraged by other filters.
 For example, the compilation of VTK-m's material interface reconstruction filter was reduced by a factor of 9 by linking to the mesh quality filter rather than recompiling it.
 The new filter structure also enables dividing the code into multiple translation units (i.e. separate C++ source files).

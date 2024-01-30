@@ -14,22 +14,21 @@ In this section we discuss further technical challenges in compiling and executi
 }
 
 \subsection{Frontier}
-The first system delivered under the ECP program, Frontier, is also the first system to break the Exascale barrier with a score on the Linpack benchmark of 1.19 exaflops. Frontier is an AMD-based system with 9,472 AMD Epyc CPUs (606,208 cores) and 37,888 AMD MI250X GPUs (8,335,360 cores). The system is organized into 74 racks, each comprising 64 blades with 2 nodes each. A node consists of a single CPU and 4 GPUs with 4 TB of RAM.
+The first system delivered under the ECP program, Frontier, is also the first system to break the Exascale barrier with a score on the Linpack benchmark of 1.19 exaflops. Frontier is an AMD-based system with 9,472 (9408 for compute only) AMD Epyc CPUs ($>$ 600,000 cores) and 37,888 (37,632 compute) AMD MI250X GPUs ($>$ 8.3 million cores). The system is organized into 74 racks, each comprising 64 blades with 2 nodes each. A node consists of a single CPU and 4 GPUs with 4 TB of RAM. Each GPU consists of two Graphics Compute Dies (GCD), which means that a node present itself to device code as having 8 GPUs.
 
-Porting to a new system that is under active development brings many challenges. When the first pre-Exascale development systems for Frontier came online, VTK-m frequently broke the compiler. At one point in the build, test, release cycle for the compilers, AMD had the VTK-m team building the compilers from bleeding-edge source to help debug the crashes. As the compilers stabilized, the team discovered another issue: compile times that were measured in centuries. And thus, the cycle would begin anew. Along the way there were many issues that required solutions from AMD, Kokkos, and the VTK-m teams. Some examples are:
+Porting to a new system that is under active development brings many challenges. When the pre-Exascale development systems for Frontier became available, VTK-m frequently broke the compiler. At one point in the build, test, release cycle for the compilers, AMD had the VTK-m team building the compilers from bleeding-edge source to help debug the crashes. As the compilers stabilized, the team discovered another issue: astronomical compile times\footnote{While building on one of the pre-exascale systems, a second system came online, and development switched over to the newer system. A week later, the system admins for the pre-exascale systems called asking if they could kill a compile job as it was consuming all the memory on the login node. It turned out, a compile was still running on the initial system more than a week later.} When VTK-m was able to compile to completion, 20 hours to finish were not uncommon. The team would work with AMD to test a new compiler, and the cycle would begin anew. Currently, a full build of VTK-m with tests and benchmarks can be completed on Frontier in under 20 minutes.
+
+Along the way there were many issues that required solutions from AMD, Kokkos, and the VTK-m teams. Some examples are:
 \begin{itemize}
     \item Compiler Errors
     \item The Optimizer infinite looping - In addition to compiler fixes, the VTK-m source was broken into smaller units to reduce template instantiation
-    \item Parallel Sorting being Single-Threaded - Kokkos hadn't accounted for VTK-m workloads that used integral types (for example, sorting keys). A simple fix provide a 12x speedup in these workloads.
+    \item Parallel Sorting being Single-Threaded - Kokkos hadn't accounted for VTK-m workloads that used integral types (for example, sorting keys). A simple fix by the Kokkos team provided a 12x speedup in these workloads.
     \item Function pointers not supported on AMD GPUs - VTK-m was re-written over several months to remove all calls through function pointers
 \end{itemize}
-Currently, a full build of VTK-m with tests and benchmarks can be completed on Frontier in under 20 minutes.
 
-\markb{Insert current status here}
+When Frontier became available to the various code teams, the VTK-m team at the University of Oregon undertook an experiment to establish VTK-m's scalability. The team created synthetic perlin noise data set consisting of 80 trillion cells, that was distributed for a full-system run using 9400 nodes and 74,088 GPUs (from above, each of the 37,000 MI250X GPUs presents as two GPUs due to the GCDs). The total time to render this dataset was 300ms.
 
-\ken{Might be worth mentioning the scaling run on Frontier.}
-
-\assign{Mark}
+\markb{De-snarkified. It's so vanilla now.}
 
 \subsection{Aurora}
 
