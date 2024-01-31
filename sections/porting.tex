@@ -145,7 +145,7 @@ This increases the burden on the algorithm developers who now have to resolve ty
 To compensate, \vtkm provides an alternate dispatching mechanism by providing various forms of a ``cast-and-call'' mechanism on the data set's elements.
 The derived filter performs the type dispatching by passing a data set element to a cast-and-call along with a templated, callable object.
 This callable object is generally the type dependent, core business logic of the filter implementation wrapped inside of a C++14 generic lambda expression.
-The lambda expression will be instantiated with types from a pre-defined type list by the cast-and call mechanism.
+The lambda expression will be instantiated with types from a pre-defined type list by the cast-and-call mechanism.
 
 The cast-and-call will attempt to resolve the data to a prescribed list of types.
 When the type of the data is not part of the type list, the cast-and-call can fallback to a known type as described in the previous \nameref{sec:virtual-methods} section.
