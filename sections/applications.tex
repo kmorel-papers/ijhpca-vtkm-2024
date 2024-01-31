@@ -97,7 +97,7 @@ The acceleration itself can be three to four orders of magnitude more compact th
 Besides increased beam energy, physicists study how to preserve beam properties essential for transport, focusing (e.g., emittance) and applications (e.g., charge and current).
 
 WarpX features advanced techniques such as GPU-acceleration for three vendors, mesh-refinement capabilities, dynamic load balancing, and unique advanced numerical solvers.
-WarpX relies on multi-level parallelization: coarse parallelization relies on block-structured domain-decomposition with MPI using the AMReX library~\cite{Zhang2019} and compute acceleration with CUDA/HIP/SYCL or OpenMP, so that simulations are scalable to the world's largest supercomputers.
+WarpX relies on multi-level parallelization: coarse parallelization relies on block-structured domain decomposition with MPI using the AMReX library~\cite{Zhang2019} and compute acceleration with CUDA/HIP/SYCL or OpenMP, so that simulations are scalable to the world's largest supercomputers.
 
 If WarpX would only rely on traditional post-processing workflows for visualization of the dynamics of Exascale simulations, the resulting multi-petabyte scale output per simulation would severely limit the available snapshots and/or level of detail to visualize.
 Addressing this need, WarpX interfaces to Ascent for in situ visualization.
