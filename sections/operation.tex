@@ -53,10 +53,18 @@ Along the way there were many issues that required solutions from AMD, Kokkos, a
   \vtkm was modified over several months to remove all calls through function pointers as part of the removal of virtual methods (as described in the \nameref{sec:virtual-methods} section).
 \end{itemize}
 
+\begin{figure}[htb]
+  \includegraphics[width=\linewidth]{frontier-render-clip}
+  \caption{
+    Output from \vtkm scaling study demonstrating rendering at full scale on the Frontier supercomputer.
+  }
+  \label{fig:frontier-render}
+\end{figure}
+
 When Frontier became available to the various code teams, the \vtkm team at the University of Oregon undertook an experiment to establish \vtkm's scalability.
 The team created synthetic perlin noise data comprising 80 trillion cells that was distributed for a full-system run using 9,400 nodes and 74,088 GPU GCDs.
 The total time to render this dataset was 300ms.
-\ken{Add a figure.}
+An example output from this scaling test is in Figure~\ref{fig:frontier-render}.
 
 %\markb{De-snarkified. It's so vanilla now.}
 %\ken{Hey, lots of people like vanilla.}
