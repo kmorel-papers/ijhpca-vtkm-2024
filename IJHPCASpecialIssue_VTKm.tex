@@ -33,6 +33,7 @@
 \definecolor{authorl}{RGB}{1, 39, 74}
 \definecolor{authorm}{RGB}{138, 56, 0}
 \definecolor{authorn}{RGB}{166, 110, 255}
+\definecolor{authoro}{RGB}{50, 100, 150}
 
 \newcommand*{\authorcomment}[3][Crimson]{\textcolor{#1}{\textbf{\emph{#3}} \mbox{-- #2}}}
 %\newcommand*{\authorcomment}[3][--]{}
@@ -51,15 +52,23 @@
 \newcommand*{\axel}[1]{\authorcomment[authorm]{Axel}{#1}}
 \newcommand*{\jay}[1]{\authorcomment[authorn]{Jay}{#1}}
 \newcommand*{\tushar}[1]{\authorcomment[authork]{Tushar}{#1}}
+\newcommand*{\sam}[1]{\authorcomment[authoro]{Sam}{#1}}
 
 \newcommand*{\vtkm}{\mbox{VTK-m}\xspace}
 \newcommand{\poincare}{Poincar\'{e}\xspace}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
 
 \begin{document}
 
 \runninghead{Moreland et al.}
 
-\title{Visualization at the Exascale: Making it all Work with VTK-m}
+\title{Visualization at Exascale: Making It All Work with VTK-m}
 
 \author{%
   Kenneth~Moreland,\affilnum{1}
@@ -100,19 +109,16 @@
 
 \email{morelandkd@ornl.gov}
 
-\begin{abstract}
-  %\assign{Hank, make an editing pass}
-  \vtkm is a software library that enables scientific visualization on Exascale machines.
-  This is challenging since 
-  Exascale machines use GPUs as accelerator processors to provide the highest computational throughput available today, necessitating an algorithmic design that often deviates from previous generations of high-performance computers. 
-  %\ollie{"classical computer" v.s. "quantum computer" ???}
-  %\ken{Good point. I've rephrased.}
-  In addition to providing scientific visualization algorithms for GPUs and other accelerator processors, \vtkm provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
-  This paper captures the main challenges encountered to make scientific visualization available at the Exascale.
-  We document the surprises and obstacles of moving from pre-Exascale platforms to the final Exascale designs and the performance on those systems.
-  We also report on the integration of \vtkm with other Exascale software technologies.
-  Finally, we show how \vtkm helps scientific discovery for applications like fusion and particle acceleration that leverage an Exascale supercomputer.
 
+
+\begin{abstract}
+  The \vtkm software library enables scientific visualization on exascale-class supercomputers.
+  Exascale machines are particularly challenging for software development in part because they use GPU accelerators to provide the vast majority of their computational throughput. Algorithmic designs for GPUs and GPU-centric computing often deviate from those that worked well on previous generations of high-performance computers that relied on traditional CPUs. 
+  Fortunately, \vtkm provides scientific visualization algorithms for GPUs and other accelerators. \vtkm also provides a framework that simplifies the implementation of new algorithms and adds a porting layer to work across multiple processor types.
+  This paper describes the main challenges encountered when making scientific visualization available at exascale.
+  We document the surprises and obstacles faced when moving from pre-exascale platforms to the final exascale designs and the performance on those systems.
+  We also report on the integration of \vtkm with other exascale software technologies.
+  Finally, we show how \vtkm helps scientific discovery for applications such as fusion and particle acceleration that leverage an exascale supercomputer.
   %\ken{
   %  Information about the IJHPCA special issue:\\
   %  \url{https://drive.google.com/drive/folders/19xAWuQSQQb9uRAfHlGfhI1N4bcXYiRNk}\\[1ex]
@@ -122,7 +128,7 @@
   %}
 \end{abstract}
 
-\keywords{visualization, exascale, VTK-m, parallel, ECP}
+\keywords{visualization, exascale, VTK-m, parallel, ECP, GPU, Frontier, Auroria, in situ}
 
 \maketitle
 

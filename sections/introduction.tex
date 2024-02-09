@@ -16,40 +16,41 @@
 
 \section{Introduction}
 
-\ken{Do not add OverLeaf comments to this document. They will not be seen! Instead, use the comment command with your name to add the comment to the text. We'll see the comment when reviewing the paper. The commands are defined near the top of IJHPCASpecialIssue\_VTKm.tex.}
+%\ken{Do not add OverLeaf comments to this document. They will not be seen! Instead, use the comment command with your name to add the comment to the text. We'll see the comment when reviewing the paper. The commands are defined near the top of IJHPCASpecialIssue\_VTKm.tex.}
 
 %\ken{Please complete your writing assignments by January 22.}
 
 %\assign{Hank, do an editing pass.}
 
 %The Exascale Computing Project (ECP) brought high-performance computing to the next milestone of capacity computing.\hank{I do not understand the preceding sentence.  Capability?  And we already had HPC.  How did ECP bring HPC?}
-As its name would imply, the goal of the Exascale Computing Project (ECP) was to build and make practical the world's first Exascale high-performance computers.
-Although this goal was nominally to stand up computers capable of a billion billion ($10^{18}$) floating point operations per second, this advancement required a revolution in both hardware and software.
-Pivotal to this advancement was the adoption of GPU processors from a variety of vendors as the primary computing engine.
-These GPUs provided an unmatched computational throughput relative to the power they consume, albeit at the cost of greater code complexity.
+As its name would imply, the goal of the Exascale Computing Project (ECP) was to build and make practical the world's first exascale supercomputers.
+Although this goal was nominally to stand up computers capable of a billion-billion ($10^{18}$) floating point operations per second, this advancement required a revolution in both hardware and software.
+Critical to this advancement was the adoption of GPUs (from a variety of vendors) to be used as the primary computing engine.
+These GPUs provided unmatched computational throughput relative to the power they consume, albeit at the cost of greater code complexity.%
+\blfootnote{Notice: This manuscript has been authored by UT-Battelle LLC under contract DE-AC05-00OR22725 with the US Department of Energy (DOE). The US government retains and the publisher, by accepting the article for publication, acknowledges that the US government retains a nonexclusive, paid-up, irrevocable, worldwide license to publish or reproduce the published form of this manuscript, or allow others to do so, for US government purposes. DOE will provide public access to these results of federally sponsored research in accordance with the DOE Public Access Plan (\url{https://www.energy.gov/doe-public-access-plan}).}
 
-Scientific simulations running on exascale supercomputers can produce data sets of unprecedented
+Scientific simulations running on exascale supercomputers can produce datasets of unprecedented
 scale, and
 visualization and analysis approaches are frequently used to understand the resulting
 data and promote discovery.
 %
 That said, the scale of the data produced by simulations on exascale computers requires
-the visualization and analysis approaches to themselves utilize significant computation.
+the visualization and analysis approaches themselves to utilize significant computational resources.
 %
-Most commonly, this computation is done using the same supercomputer and hardware that produced
+Most commonly, this computation is conducted on the same supercomputer and hardware that produced
 the data in the first place.
 
-\vtkm is a software library that makes it possible to process data sets from exacale computers
-by implementing classic scientific visualization algorithms redesigned for heavily threaded environments like GPUs.
-\vtkm also provides a framework that simplifies the implementation of new algorithms and provides a porting layer to work across multiple processor types.
-At the inception of ECP, \vtkm was the byproduct of a research project.
-ECP provided the investment to promote \vtkm to production software.
-This software that now serves as the underlying visualization implementation across all ECP.
-\vtkm is currently used by ParaView, VisIt, and Ascent to execute visualization algorithms on Exascale platforms and others using GPU processing.
+The \vtkm software library makes it possible to process these enormous datasets from exascale computers
+by implementing classic scientific visualization algorithms that have been redesigned for heavily threaded environments such as supercomputers with GPUs.
+\vtkm also provides a framework that simplifies the implementation of new algorithms and adds a porting layer to work across multiple processor types.
+At the inception of the ECP, \vtkm was the byproduct of a research project.
+The ECP provided the investment to promote \vtkm to production software.
+This software now serves as the underlying visualization implementation across the entire ECP.
+\vtkm is currently used by ParaView, VisIt, and Ascent to execute visualization algorithms on exascale platforms and on other GPU-centric supercomputers.
 
-This paper provides an overview of the main challenges encountered to make visualization available at the Exascale.
+This paper describes the challenges encountered when making visualization available at exascale.
 It begins with a brief overview of the \vtkm framework.
-It then discuss the largest porting challenges encountered during ECP as the hardware for the final Exascale machines differed dramatically from the pre-Exascale machines.
-This is followed by a summary of the performance of \vtkm on the Exascale hardware.
+It then describes the most significant porting challenges encountered during the ECP given the hardware for the production exascale machines differed dramatically from the pre-exascale machines.
+This is followed by a summary of the performance of \vtkm on the exascale hardware.
 Finally, the paper concludes with a discussion on the software engineering required to integrate \vtkm into usable visualization tools and successes with using \vtkm to solve problems in real science applications.
 This includes porting challenges, performance testing and improvement, integration with other ECP software technologies, and the support of ECP applications.

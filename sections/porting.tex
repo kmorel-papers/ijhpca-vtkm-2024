@@ -1,7 +1,7 @@
 \section{Porting Challenges}
 
-Although the pre-Exascale machines gave the \vtkm development team good experience porting to different processor architectures, the design of the Exascale machines Frontier and Aurora introduced new technical challenges.
-This section reports the most major modifications of \vtkm to make it feasible to run on the Exascale hardware.
+Although the pre-exascale machines provided good experience to the \vtkm development team for porting to different processor architectures, the design of the Frontier and Aurora exascale machines introduced new technical challenges.
+This section reports the most significant modifications required to make it feasible to run \vtkm on exascale hardware.
 
 %% \ken{
 %%   Each subsection should be roughly 1/3 page.
@@ -23,88 +23,88 @@ As described in the \nameref{sec:overview} section,
 one of the main features that \vtkm supports is ``write once, compile anywhere'' for its algorithms.
 %\vtkm filter’s are implemented in modern C++. The build system of \vtkm can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in \vtkm called the \texttt{DeviceAdapter}.
 A device portability layer called a device adapter allows algorithms written with standard C++ features to run across all devices.
-These device adapters wrap a parallel device and provide functionalities for parallel-task scheduling, memory management, atomic operations, and several commonly used parallel algorithms like scan, sort, and reduce through a common interface.
+These device adapters wrap a parallel device and provide functionalities for parallel-task scheduling, memory management, atomic operations, and several commonly used parallel algorithms such as scan, sort, and reduce through a common interface.
 These are implemented on top of the native libraries used to program these devices.
 %At the most basic level, a device adapter only needs to provide support for memory management on the device, a way to execute an n-way, fine-grained, parallel task on the device, and atomic operations.
 %There are generic implementations for all of the parallel algorithms like sort, reduce, scan, etc, but it is possible to override these with specialized implementations for best performance.
 %The early versions of \vtkm had \texttt{DeviceAdapter} implementations for single threaded CPUs using standard C++, multithreaded CPUs using the threading building blocks library or OpenMP, and GPGPUs using CUDA.
 
-When the architectures for the initial two major Exascale machines, Aurora and Frontier, were announced, it was revealed that they would be using two completely new GPGPU architectures with their own native libraries (SYCL and HIP).
-This would have required two new additional device adapter backends.
+When the architectures for Aurora and Frontier were announced, it was revealed that they would be using two completely new GPU architectures from two different vendors (i.e., Intel GPUs in Aurora and AMD GPUs in Frontier) with their own native libraries (SYCL for Intel and HIP for AMD).
+Porting VTK-m directly to these new archictectures would have required two new device adapter back ends.
 Although the device adapter layer greatly simplifies the porting of \vtkm code, implementing device adapters themselves is not trivial.
 So, although it would be technically feasible to design device adapters for two new devices, it would have required significant effort.
-%Maintaining these backends together with the already existing backends was would require a lot of effort, especially for a project that is primarily concerned with implementing highly parallel visualization algorithms.
+%Maintaining these back ends together with the already existing back ends was would require a lot of effort, especially for a project that is primarily concerned with implementing highly parallel visualization algorithms.
 
-For these reasons, we looked towards another ECP project called Kokkos~\cite{Edwards2014, Trott2022}. Kokkos is a library for implementing performance portable applications in C++. Similar to \vtkm, Kokkos also supports multiple device backends, including HIP and SYCL used by the Exascale systems. So, with just one device adapter built on top of Kokkos, we are able to target both the machines.
-This allows us to write the \vtkm device adapter once to the Kokkos API and defer the work of interfacing with the different ECP device APIs to the Kokkos team, who were already doing this for other ECP projects.
+To overcome this hurdle, we looked to another ECP project called Kokkos~\citep{Edwards2014, Trott2022}. Kokkos is a library for implementing performance-portable applications in C++. Similar to \vtkm, Kokkos also supports multiple device back ends, including SYCL and HIP, which are used by the exascale systems. So, with just one device adapter built on top of Kokkos, we were able to target both the machines.
+This allows us to write one \vtkm device adapter to target the Kokkos API and defer the work of interfacing with the different ECP device APIs to the Kokkos team, who were already doing this for other ECP projects.
 
 %\ken{Is there anything more to be said about the interface? Was there anything particularly challenging? Any mismatch between the APIs? Any ``hacks'' that might have happened?}
 %\sujin{I have added a few paragraphs bellow. It may be too detailed and probably needs some simplification}
-Since the exascale machines were based on completely new hardware, Kokkos was also in active development during the time we were developing the device adapter. Therefore, we faced a few challenges during the development and in the following paragraphs we will describe some of the most interesting challenges that we faced.
+Because the exascale machines were based on completely new hardware, Kokkos was also in active development when we were developing the \vtkm device adapter. Therefore, we faced a few challenges during the development, and some of the most interesting challenges we encountered are described below.
 
-As described previously, \vtkm filters and algorithms are implemented as a sequence of some primitive parallel operations like scan, sort, and reduce.
-So, for good performance it is imperative that the implementation of these parallel primitives be as efficient as possible.
+As mentioned previously, \vtkm filters and algorithms are implemented as a sequence of some primitive parallel operations such as scan, sort, and reduce.
+To achieve good performance, the implementation of these parallel primitives must be as efficient as possible.
 \vtkm comes with generic implementations for these operations, but many are not well optimized.
-Thus, device adapters specialize and optimize these operations for their specific hardware.
+Fortunately, device adapters specialize and optimize these operations for their target hardware.
 
-For the Kokkos backend, we relied on the implementations provided by the Kokkos library.
-However, we discovered that Kokkos did not have all of the primitives that \vtkm supported and, even when available, some implementations were not as flexible as supported by \vtkm.
-For example, at the time of development, the Kokkos sort only supported floating point values with the less-than operator as the ordering comparator
+For the Kokkos back end, we relied on the implementations provided by the Kokkos library.
+However, we discovered that Kokkos did not have all of the primitives that \vtkm supported, and, even when available, some implementations were not as flexible as those supported natively by \vtkm.
+For example, at the time of development, the Kokkos sort only supported floating point values with the less-than operator as the ordering comparator,
 whereas \vtkm supported all primitive types and also non-primitive types with custom comparison operators.
-Therefore, we had to implement code-paths to use the Kokkos sort only for supported arguments and to fall-back on the generic \vtkm implementations for all other cases.
+Therefore, we had to implement code paths to use the Kokkos sort for only supported arguments and to fall back to the generic \vtkm implementations for all other cases.
 
-Another issue we encountered were bugs in the Kokkos code base. During development we hit several critical bugs that would crash the program. Therefore, we also had to workaround these failing features with a fallback code path for failing conditions until these issues could be addressed.
+Another issue we encountered were bugs in the Kokkos code base. During development, we hit several critical bugs that would crash the program. Therefore, we also had to work around these failing features with a fallback code path for failing conditions until these issues could be addressed.
 
 We also faced challenges getting the Kokkos library initialization to work with \vtkm.
-Kokkos expects to be initialized exactly once with the feature configuraiton.
-In contrast, \vtkm's initialization is optional and allows configuration to be selected more flexibly.
-This required us to rethink and overhaul our own initialization procedure so all of our dependencies were initialized correctly and in the correct order.
+Kokkos expects to be initialized exactly once with the feature configuration.
+In contrast, \vtkm's initialization is optional and allows the configuration to be selected more flexibly.
+This required us to rethink and overhaul our own initialization procedure so that all of our dependencies were initialized correctly and in the correct order.
 Furthermore, using \vtkm with other libraries that also use Kokkos is a valid use case, but only one of these libraries should initialize and finalize the Kokkos library.
-To prevent it from ``stealing'' the Kokkos initialization from other code, \vtkm delays Kokkos initialization until it is required, and detects whether the Kokkos system is already initialized.
-If \vtkm does initialize Kokkos, it establishes a callback at program termination to finalize the Kokkos library.
+To prevent it from ``stealing'' the Kokkos initialization from other code, \vtkm delays Kokkos initialization until it is required and detects whether the Kokkos system is already initialized.
+If \vtkm does initialize Kokkos, then it establishes a callback at program termination to finalize the Kokkos library.
 
-\subsection{Addition and then Removal of Virtual Methods}
+\subsection{Addition and Then Removal of Virtual Methods}
 \label{sec:virtual-methods}
 
 %\assign{Ken}
 
-\vtkm uses C++ templates to customize algorithms to different data types.
+\vtkm uses C++ templates to customize algorithms for different data types.
 Ideally, an algorithm
 %that operates on arrays
-will know the data types that it will operate on.
-Unfortunately, this is seldom the case for \vtkm where data ingested from different sources can have any number of basic types
+will know the data types on which it will operate.
+Unfortunately, this is seldom the case for \vtkm because data ingested from different sources can have any number of basic types
 %(32- or 64-bit floats or fixed precision values encoded in integers)
-and different types of memory layout.
-In the early years of ECP, this problem was addressed by compiling algorithms in \vtkm for all possible types that could be encountered.
-However, the amount of potential cases generated is too large to be practical.
+and memory layouts.
+In the early years of the ECP, this problem was addressed by compiling algorithms in \vtkm for all possible types that could be encountered.
+However, the amount of potential cases generated is too many to be practical.
 
-C++ objects with virtual methods are a natural solution to this problem, and as they became available on CUDA devices, \vtkm started using virtual methods to hide the structure of arrays.
+C++ objects with virtual methods are a natural solution to this problem, and when they became available on CUDA devices, \vtkm started using virtual methods to hide the structure of arrays.
 This originally addressed some of the issues with type abstraction.
 However, this solution worked poorly and was later abandoned for two reasons.
-First, using virtual methods introduced problems with library linking as the compilers had to collect any possible code that might be needed to be loaded on the device.
-Second, when ECP announced that its Exascale machines would be using GPUs other than CUDA, it was unclear how well they would support virtual methods or even if they would be supported at all.
+First, using virtual methods introduced problems with library linking because the compilers had to collect any possible code that might need to be loaded on the device.
+Second, when the ECP announced that its exascale machines would be using GPUs from Intel and AMD (i.e., not using NVIDIA's CUDA), it was unclear how well they would support virtual methods or even if they would support them at all.
 
-Consequently, the \vtkm development team pivoted.
-Virtual methods were removed from the \vtkm code that ran on devices.
-To manage the operations on types without using virtual methods, \vtkm employed a trio of strategies: multiplexing the type in the algorithm, generalizing the stride in arrays, and providing fallbacks when unexpected types were encountered.
+Consequently, the \vtkm development team pivoted, and
+virtual methods were removed from the \vtkm code that ran on devices.
+To manage the operations on types without using virtual methods, \vtkm employed a trio of strategies: multiplexing the type in the algorithm, generalizing the stride in arrays, and providing fall backs when unexpected types were encountered.
 
-The first strategy, multiplexing, required the use of a type agnostic storage object.
+The first strategy, multiplexing, required using a type-agnostic storage object.
 For this, a \texttt{Variant} class was added to \vtkm.
 The \texttt{Variant} takes a list of types as template parameters, and it can hold exactly one of these objects at a time.
-At runtime, the proper type can be queried and extracted.
+At run time, the proper type can be queried and extracted.
 %Implementing the \texttt{Variant} to avoid type punning across all device compilers was challenging.
 Although multiplexing from a variant object still requires separate compilation for all possible types, it limits the code that must be recompiled to make it more manageable.
 
 The second strategy required a redesign of the array management in \vtkm.
-Where the original design of array management completely abstracted the implementation, the new design based array management on known buffers of memory.
+Where the original design of array management completely abstracted the implementation, the new design based the array management on known buffers of memory.
 This in turn provided a way to generalize the representation of an array component by defining a stride in the buffer.
 In this way, an algorithm no longer had to be compiled for a specific data layout.
 It could instead apply a stride to the array and use any layout.
 
-The third strategy recognized that although a great number of types are possible, many are rarely if ever encountered in practice.
+The third strategy recognized that although many types are possible, most are rarely encountered in practice.
 Therefore, instead of attempting to compile a function for any possible type, it is possible to instead compile for the most likely types and then have a fallback for the cases when the type is unexpected.
-The typical solution is to copy the array of unknown type to an array of a known type.
-This feature was included into the filter interface overhaul, which is described in the next section.
+The typical solution is to copy the array of an unknown type to an array of a known type.
+This feature was included in the filter interface overhaul, which is described in the next section.
 
 \subsection{Filter Interface Overhaul}
 \label{sec:filter-overhaul}
@@ -112,15 +112,15 @@ This feature was included into the filter interface overhaul, which is described
 %\assign{Ollie}
 
 The majority of algorithms in \vtkm are contained in what is called a ``filter'' object.
-A filter takes a data set, performs some operations to modify it, and returns the resulting data set.
-Filters provide the outwardly facing API to processing data in \vtkm.
-However, as previously described, these data sets can have any number of data types and structures.
+A filter takes a dataset, performs some operations to modify it, and returns the resulting dataset.
+Filters provide the outwardly facing API to process data in \vtkm.
+However, as previously described, these datasets can have any number of data types and structures.
 The \vtkm filter base class needs to provide a mechanism to resolve data types.
 That is, the filter base class needs a way to call a templated method in a derived implementation class with fully resolved data types.
 
-Since a C++ template method can not also be a virtual function, which is needed for typical runtime polymorphism, the original design used a rather complicated technique called the curiously recurring template pattern (CRTP) \cite{Coplien1995} to emulate it.
-CRTP works by making the type of the derived class a template argument to the base class.
-When the base class needs to call a method in the derived class, rather than use a virtual method it recasts itself as the derived class and calls the method directly.
+Because a C++ template method cannot also be a virtual function, which is needed for typical run-time polymorphism, the original design used a rather complicated technique called the curiously recurring template pattern (CRTP)~\citep{Coplien1995} to emulate it.
+CRTP works by making the type of derived class a template argument to the base class.
+When the base class needs to call a method in the derived class, rather than use a virtual method, it recasts itself as the derived class and calls the method directly.
 This allows the base class to iterate through a list of supported data types and call a templated method in the derived class to implement the algorithm on each one.
 
 %The addition of \texttt{Variant} and the redesign of array management in \vtkm also enabled us to further redesign the developer's interface for \texttt{Filter}s.
@@ -130,65 +130,65 @@ This allows the base class to iterate through a list of supported data types and
 %First, as mentioned above, we had to instantiate a large number of \textit{DoExecute}, one for each of \texttt{T} in the list.
 %Second, since a C++ template method can not also be a virtual function which is needed for runtime polymorphism, the original design used a rather complicated technique called \emph{Couriously recurring template pattern (CRTP)} to emulate it.
 
-However, using CRTP also made the base filter class itself a class template, and its execution methods required exposed definitions that needed to be recompiled at every instance of its use.
+However, using CRTP also made the base filter class itself a class template, and its execution methods required exposed definitions that must be recompiled with every use.
 This made the \vtkm filter library essentially a header-only library, and clients using it had to include all the necessary implementation in the header files.
-When compiling client code, all those header files had to be parsed and classes and methods had to be instantiated.
+When compiling client code, all those header files had to be parsed, and classes and methods had to be instantiated.
 As a consequence, it took a long time to compile applications of \vtkm.
-This issue was most prominent when compiling for GPU devices since most device compilers were not as efficient in handling C++ templates as host compilers.
-When integrated as part of an in situ pipeline, simulation code calling \vtkm's filters also needed to be compiled by a device compiler, thus exacerbating the problem.
-In some extreme cases, the whole compilation process took more than 24 hours to complete.
+This issue was most prominent when compiling for GPU devices because most device compilers were not as efficient as host compilers when handling C++ templates.
+When integrated as part of an in-situ pipeline, simulation code that called \vtkm's filters also had to be compiled by a device compiler, thus exacerbating the problem.
+In some extreme cases, the entire compilation process took more than 24 hours to complete.
 
-The new design turned this type dispatching mechanism around.
+The new design changed the type-dispatching mechanism.
 The responsibility of type dispatching was shifted from the filter base class to the derived implementation classes.
-The execution method in the derived class is no longer a template; it accepts a data set containing ambiguous types.
-This increases the burden on the algorithm developers who now have to resolve types themselves.
-To compensate, \vtkm provides an alternate dispatching mechanism by providing various forms of a ``cast-and-call'' mechanism on the data set's elements.
-The derived filter performs the type dispatching by passing a data set element to a cast-and-call along with a templated, callable object.
-This callable object is generally the type dependent, core business logic of the filter implementation wrapped inside of a C++14 generic lambda expression.
-The lambda expression will be instantiated with types from a pre-defined type list by the cast-and-call mechanism.
+The execution method in the derived class is no longer a template; it accepts a dataset that contains ambiguous types.
+This increases the burden on the algorithm developers who must now resolve types themselves.
+To compensate, \vtkm provides an alternate dispatching mechanism by providing various forms of a ``cast-and-call'' mechanism on the dataset's elements.
+The derived filter performs the type dispatching by passing a dataset element to a cast-and-call along with a templated, callable object.
+This callable object is generally the type-dependent, core business logic of the filter implementation wrapped inside a C++14 generic lambda expression.
+The lambda expression will be instantiated with types from a predefined type list by the cast-and-call mechanism.
 
-The cast-and-call will attempt to resolve the data to a prescribed list of types.
-When the type of the data is not part of the type list, the cast-and-call can fallback to a known type as described in the previous \nameref{sec:virtual-methods} section.
-The pre-defined type list and fallback limit the number of instantiations of the lambda expression.
+The cast-and-call mechanism will attempt to resolve the data to a prescribed list of types.
+When the data type is not part of the type list, the cast-and-call mechanism can fall back to a known type, as described in the \nameref{sec:virtual-methods} section.
+The predefined type list and fallback limit the number of instantiations of the lambda expression.
 Using cast-and-call with lambda expressions in this way also limits the portion of code to be instantiated.
-In contrast, the original design required the whole body of the filter implementation to be instantiated.
+In contrast, the original design required the entire body of the filter implementation to be instantiated.
 
-Since the filter execution methods are no longer template methods, they can be virtual methods.
-Note that the filter methods in question are explicitly run in \vtkm's control environment, which means they will only be run on the CPU host of the machine.
-Previously discussed issues with virtual methods on GPUs do not apply here, so creating virtual methods here is not problematic.
-The virtual methods eliminate the need to use the CRTP technique.
-As a consequence, the whole filter class hierarchy has become non-template classes as well.
-The library is no longer a header-only library and can be built as a traditional, pre-compiled library.
+Because the filter execution methods are no longer template methods, they can be virtual methods.
+Note that the filter methods in question are explicitly run in \vtkm's control environment, and this means they will only be run on the CPU host.
+Previously discussed issues with virtual methods on GPUs do not apply here, so creating virtual methods is not problematic in this case.
+Moreover, the virtual methods eliminate the need to use the CRTP technique.
+Consequently, the entire filter class hierarchy has become a non-template class as well.
+The library is no longer a header-only library and can be built as a traditional, precompiled library.
 The filter library is further divided into several modules with each separately compiled into a \texttt{.so} file.
-Applications now do not need to be compiled by a device compiler simply because they are using \vtkm.
+Finally, applications no longer need to be compiled by a device compiler simply because they are using \vtkm.
 
 The new filter structure, which removes exposed templates and encapsulates code into libraries, greatly reduces application build time because applications no longer have to compile many \vtkm templates.
 Rather, applications simply link to methods in the \vtkm library.
-We have also found that the new approach provides other compile-time saving opportunities within the library.
+The new approach also provides other compile-time saving opportunities within the library.
 For example, some filters incorporate the functionality of others as a subroutine.
 The new filter structure allows filters to be compiled once and have their functionality leveraged by other filters.
 For example, the compilation of \vtkm's material interface reconstruction filter was reduced by a factor of 9 by linking to the mesh quality filter rather than recompiling it.
 
-The new filter structure also enables dividing the code into multiple translation units (i.e. separate C++ source files).
+The new filter structure also enables dividing the code into multiple translation units (i.e., separate C++ source files).
 Although this does not necessarily reduce the aggregate compile times, it more effectively leverages cores in parallel builds and reduces the possibility of compiler crashes from running out of resources.
 %\ollie{Ken can you add some concrete timing measure as you did before here?}
 %\ken{I will look. I probably don't have anything concrete. I'm not sure I captured enough data to measure the time before the filter change and the time after. (A lot changed in the interim anyway.) But I think I can pull up a couple of examples.}
 
 \subsection{GPU-to-GPU Transfers}
 
-Modern HPC GPUs allow direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to directly send data stored in their device memory to the target GPU device memory. This contrasts with the traditional and costly GPU communication pattern that consists in first copying the desired data from the device memory to host memory, transferring it, and then again copying the received data from host memory to device memory.
+Modern GPUs used in HPC can perform direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to send data stored in their device memory directly to another GPU's device memory. This contrasts the traditional and costly GPU communication pattern that required first copying the desired data from the first GPU's device memory to the system's host memory and then copying the data again from the host memory to the second GPU's device memory.
 
-Enabling this feature in \vtkm required changes in the source code of both \vtkm itself and DIY, a third-party library that \vtkm uses to manage its MPI communication~\cite{Peterka2011,Morozov2016}.
+Enabling this feature in \vtkm required changes in the source code of both \vtkm itself and DIY, which is a third-party library that \vtkm uses to manage its MPI (Message Passing Interface) communication~\citep{Peterka2011,Morozov2016}.
 %The reason for making changes to DIY is that \vtkm delegates data marshaling and remote communication through the DIY library.
 
-The DIY library changes consisted of adding routines that allow sending and receiving raw pointers directly encapsulated in a newly introduced ``blob'' data type. This contrasts with the regular operation of DIY that copies and serializes data before sending and receiving. In addition to that, we have also introduced a new API in DIY that controls the ownership of the passed raw pointer.
+The DIY library changes consisted of adding routines that allow sending and receiving raw pointers directly and encapsulated in a newly introduced ``blob'' data type. This contrasts the regular operation of DIY, which usually copies and serializes data before sending and receiving. Additionally, we introduced a new API in DIY to control the ownership of the passed raw pointer.
 
 The corresponding \vtkm changes consisted of modifying the \vtkm class that manages memory buffers and their location among host and devices.
 In particular, the changes overwrite the DIY serialization to directly pass these memory buffers to and from DIY.
 Additionally, a new CMake option named \texttt{VTKm\_ENABLE\_GPU\_MPI} was added to activate direct GPU-to-GPU communication of \vtkm buffer objects.
-This in turn, enables direct GPU communication in \vtkm since most of the \vtkm storage entities are composed of \vtkm buffers. 
+This enables direct GPU communication in \vtkm because most of the \vtkm storage entities are composed of \vtkm buffers. 
 
 The main challenge found during the implementation of this feature was maintaining compatibility with the Frontier target system.
-The problem was that the software stack was a moving target with frequent updates that in many cases required us to modify build and runtime parameters and, in some other cases, perform changes to the \vtkm and DIY source code.
-This challenge was minimized by provisioning the \vtkm Gitlab project with nightly jobs that build and run tests using this feature in the Frontier test-bed system.
-This allowed us to quickly identify problems arising in changes to either \vtkm's source code or the Frontier software stack.
+Frontier's software stack was a moving target with frequent updates that---in many cases---required us to modify build and runtime parameters and---in some other cases---required us to change the \vtkm and DIY source code.
+This challenge was minimized by provisioning the \vtkm GitLab project with nightly jobs to build and run tests on the Frontier test-bed system.
+This extra testing allowed us to quickly identify problems that arose from changes to either \vtkm's source code or to the Frontier software stack.
