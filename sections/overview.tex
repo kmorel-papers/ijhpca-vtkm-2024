@@ -15,9 +15,9 @@ two approaches:
 %\jay{Table is added and we might simplify this paragraph a little bit and put detailed references into the table.}
 
 At the onset of the ECP, \vtkm contained only the most common operations for scientific visualization: contour, threshold, external faces, basic surface simplification, and rendering.
-Although this initial set of operations is useful, practitioners almost always require more functionality.
+Although this initial set of operations is useful, users almost always require more functionality.
 The ECP enabled this additional functionality to grow with the introduction of new algorithms and performance improvements to the existing ones.
-Table~\ref{tab:algorithms} contains a summary of algorithms provided by \vtkm.
+Table~\ref{tab:algorithms} contains a selection of algorithms currently provided by \vtkm.
 These added features provided the necessary functionality for the tools and applications that utilized \vtkm to execute on exascale machines and similar hardware.
 
 %% \begin{figure}[htb]
@@ -41,28 +41,29 @@ The worklet API in the execution environment is designed to promote thread safet
 %This design promotes developer efficiency, as
 %\vtkm simplifies implementations for current and future algorithms, and also provides 
 %automatic and efficient porting of these algorithms across different devices.
-
+It is also well suited for modern devices that require many (thousands or more) parallel threads to run efficiently, which are the type of devices \vtkm is designed for.
 
 To achieve portability, \vtkm contains a device adapter that manages interaction with a variety of devices.
 The entirety of \vtkm can be ported with a change to the device adapter.
 %
 Furthermore, all execution code (``device code'') is implemented with standard C++14
 %and thus universal for any GPU device.
-and can be compiled for any device that supports C++.
+and can thus be compiled for any device supporting this very common programming environment.
 %\hank{Is this statement too strong?}
 %\ken{I've qualified the statement to be more accurate. I am leaving out some qualifications about using only the subset of the language supported by the device compiler, but would that much detail be necessary here?}
 
-\vtkm uses multiple approaches to achieve efficient parallelization.
-One approach is 
+\vtkm uses multiple techniques to achieve efficient parallelization.
+One technique is
 to enable data to be divided into small pieces for parallel execution by
 using a 
 flexible data model~\citep{Meredith2012}.
-A second approach is 
+A second technique is
 to utilize
 data parallel primitive methods~\citep{Blelloch1990}.
 Data parallel primitives allow algorithms to be implemented as a sequence of data parallel operations such as scan, sort, or reduce.
 Early work explored how to implement scientific visualization using data parellel primitives~\citep{Lo2012}.
-To simplify the implementation further, \vtkm provides meta data parallel primitives~\citep{Moreland2021} that incorporate common patterns for scientific data that were demonstrated to be efficient.
+To simplify the implementation further, \vtkm provides meta data-parallel primitives~\citep{Moreland2021} that incorporate common patterns for scientific data that were demonstrated to be efficient.
+For example, \vtkm provides a meta data-parallel primitive to map an operation to every cell of a mesh while internally handling all the indexing of shape and incident point information.
 Finally, note that the \vtkm design achieves developer efficiency with 
 streamlined algorithm development and 
 automatic
