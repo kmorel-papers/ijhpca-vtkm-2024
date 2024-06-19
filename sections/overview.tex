@@ -60,8 +60,13 @@ flexible data model~\citep{Meredith2012}.
 A second technique is
 to utilize
 data parallel primitive methods~\citep{Blelloch1990}.
-Data parallel primitives allow algorithms to be implemented as a sequence of data parallel operations such as scan, sort, or reduce.
+Data parallel primitives allow algorithms to be implemented as a sequence of data parallel operations such as map, scan, sort, and reduce.
 Early work explored how to implement scientific visualization using data parellel primitives~\citep{Lo2012}.
+Map applies an operation to each datum and is a convenient way to specify parallel operations.
+Scan, which produces a running sum, product, or other associative operation, is useful for building indicies after counting.
+Sort reorders data to make duplicates easy to find.
+Reduce provides a total sum or product for quick accumulations.
+
 To simplify the implementation further, \vtkm provides meta data-parallel primitives~\citep{Moreland2021} that incorporate common patterns for scientific data that were demonstrated to be efficient.
 For example, \vtkm provides a meta data-parallel primitive to map an operation to every cell of a mesh while internally handling all the indexing of shape and incident point information.
 Finally, note that the \vtkm design achieves developer efficiency with 
