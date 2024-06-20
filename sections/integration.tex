@@ -21,7 +21,7 @@ In this section, we discuss the major visualization tools that we integrated \vt
 The \vtkm library provides high-performance implementations of several visualization algorithms for highly parallel processors.
 However, features such as file I/O, rendering, and pipeline management, which are all essential parts of a full-featured visualization toolkit, are beyond the scope of \vtkm.
 On the other hand, ParaView is a mature visualization software that has robust implementations of these features.
-Therefore, we wanted to integrate \vtkm into ParaView in such a way that ParaView can use \vtkm filters to accelerate its operations when a \vtkm implementation and highly parallel hardware is available.
+Therefore, we wanted to integrate \vtkm into ParaView in such a way that ParaView can use \vtkm filters to accelerate its operations when a \vtkm implementation and hardware that concurrently executes many threads is available.
 
 We also wanted the \vtkm accelerated filters to be as easy to use as possible.
 Therefore, we chose to integrate \vtkm using VTK and ParaView's factory-instantiation feature.
