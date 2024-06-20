@@ -116,7 +116,7 @@
   Exascale machines are particularly challenging for software development in part because they use GPU accelerators to provide the vast majority of their computational throughput. Algorithmic designs for GPUs and GPU-centric computing often deviate from those that worked well on previous generations of high-performance computers that relied on traditional CPUs. 
   Fortunately, \vtkm provides scientific visualization algorithms for GPUs and other accelerators. \vtkm also provides a framework that simplifies the implementation of new algorithms and adds a porting layer to work across multiple processor types.
   This paper describes the main challenges encountered when making scientific visualization available at exascale.
-  We document the surprises and obstacles faced when moving from pre-exascale platforms to the final exascale designs and the performance on those systems.
+  We document the surprises and obstacles faced when moving from pre-exascale platforms to the final exascale designs and the performance on those systems including scaling studies on Frontier, an exascale machine with over 37,000 AMD GPUs.
   We also report on the integration of \vtkm with other exascale software technologies.
   Finally, we show how \vtkm helps scientific discovery for applications such as fusion and particle acceleration that leverage an exascale supercomputer.
   %\ken{
