@@ -19,9 +19,9 @@ This section reports the most significant modifications required to make it feas
 %\sujin{
 %The first two paragraphs can be simplified by referring to the device adapter explanation in the \vtkm overview section
 %}
-As described in the \nameref{sec:overview} section,
+As described in Section \ref{sec:overview},
 one of the main features that \vtkm supports is ``write once, compile anywhere'' for its algorithms.
-%\vtkm filter’s are implemented in modern C++. The build system of \vtkm can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in \vtkm called the \texttt{DeviceAdapter}.
+%\vtkm filter's are implemented in modern C++. The build system of \vtkm can then compile these for one or more of the various parallel devices that it supports. This level of compatibility is achieved through the use of an abstraction layer in \vtkm called the \texttt{DeviceAdapter}.
 A device portability layer called a device adapter allows algorithms written with standard C++ features to run across all devices.
 These device adapters wrap a parallel device into a common API that provides functionalities for parallel-task scheduling, memory management, atomic operations, and several commonly used parallel algorithms such as scan, sort, and reduce through a common interface.
 These are implemented on top of the native libraries used to program these devices.
@@ -153,7 +153,7 @@ This callable object is generally the type-dependent, core business logic of the
 The lambda expression will be instantiated with types from a predefined type list by the cast-and-call mechanism.
 
 The cast-and-call mechanism will attempt to resolve the data to a prescribed list of types.
-When the data type is not part of the type list, the cast-and-call mechanism can fall back to a known type, as described in the \nameref{sec:virtual-methods} section.
+When the data type is not part of the type list, the cast-and-call mechanism can fall back to a known type, as described in Section \ref{sec:virtual-methods}.
 The predefined type list and fallback limit the number of instantiations of the lambda expression.
 Using cast-and-call with lambda expressions in this way also limits the portion of code to be instantiated.
 In contrast, the original design required the entire body of the filter implementation to be instantiated, which can increase both compilation time and code bloat.

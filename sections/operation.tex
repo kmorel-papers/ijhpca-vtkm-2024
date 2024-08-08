@@ -44,13 +44,13 @@ Along the way there were many issues that required solutions from AMD, Kokkos, a
 \item \emph{Optimizer Internal Looping.}
   In addition to compiler fixes, certain portions of the code found the compiler optimizing the code too aggressively in extended internal loops.
   Hints were added to prevent the compiler from optimizing out of control.
-  Furthermore, the \vtkm source was broken into smaller units to reduce template instantiation and to reduce compiler resource utilization, as described in the \nameref{sec:filter-overhaul} section.
+  Furthermore, the \vtkm source was broken into smaller units to reduce template instantiation and to reduce compiler resource utilization, as described in Section \ref{sec:filter-overhaul}.
 \item \emph{Degradation of Sorting Parallelism.}
   The original Kokkos sorting algorithm had not accounted for \vtkm workloads that used integral types (e.g., sorting keys).
   A binning algorithm that worked well for uniformly distributed values degraded to a largely serial process when many values landed in a single bin.
   A simple fix by the Kokkos team provided a $12\times$ speedup in these workloads.
 \item \emph{Function Pointers Unsupported on AMD GPUs.}
-  \vtkm was modified over several months to remove all calls through function pointers as part of the removal of virtual methods (as described in the \nameref{sec:virtual-methods} section).
+  \vtkm was modified over several months to remove all calls through function pointers as part of the removal of virtual methods (as described in Section \ref{sec:virtual-methods}).
 \end{itemize}
 
 \begin{figure}[htb]
@@ -82,6 +82,6 @@ In August 2022, we conducted tests on the Florentia test platform, which contain
 Finally, by January 2023, our efforts shifted to Sunspot, the Aurora test and development system, which had 128 nodes with 2$\times$ Intel Xeon Max Series CPUs and 6$\times$ Intel Data Center Max Series GPUs.
 The first light on Aurora occurred in August 2023.
 
-Throughout our porting and testing efforts, we maintained close collaboration with Intel engineers and ALCF performance engineering staff. This collaboration led to the identification and resolution of several bugs in successive versions of the Intel oneAPI software development kit. In November 2020, we completed a first set of early \vtkm benchmarks on Iris by using Kokkos with OpenMP target offload. However, in February 2021, we encountered issues with virtual methods when transitioning to Kokkos with SYCL. Fortunately, the team anticipated this problem and had already started the process of replacing virtual methods (see the \nameref{sec:virtual-methods} section), and this issue was resolved soon after. Additionally, we worked with Intel to address long build times.
+Throughout our porting and testing efforts, we maintained close collaboration with Intel engineers and ALCF performance engineering staff. This collaboration led to the identification and resolution of several bugs in successive versions of the Intel oneAPI software development kit. In November 2020, we completed a first set of early \vtkm benchmarks on Iris by using Kokkos with OpenMP target offload. However, in February 2021, we encountered issues with virtual methods when transitioning to Kokkos with SYCL. Fortunately, the team anticipated this problem and had already started the process of replacing virtual methods (see Section \ref{sec:virtual-methods}), and this issue was resolved soon after. Additionally, we worked with Intel to address long build times.
 
 By December 2023, the latest \vtkm and Kokkos development branches were successfully running on Aurora and achieving a 97\% success rate in regression testing. Porting, deployment, and integration efforts are set to continue on Aurora as we move beyond the ECP era.
