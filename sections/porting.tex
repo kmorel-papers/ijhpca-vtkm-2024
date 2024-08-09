@@ -1,4 +1,4 @@
-\section{Porting Challenges}
+\section{Porting challenges}
 
 Although the pre-exascale machines provided good experience to the \vtkm development team for porting to different processor architectures, the design of the Frontier and Aurora exascale machines introduced new technical challenges.
 This section reports the most significant modifications required to make it feasible to run \vtkm on exascale hardware.
@@ -63,7 +63,7 @@ Furthermore, using \vtkm with other libraries that also use Kokkos is a valid us
 To prevent it from ``stealing'' the Kokkos initialization from other code, \vtkm delays Kokkos initialization until it is required and detects whether the Kokkos system is already initialized.
 If \vtkm does initialize Kokkos, then it establishes a callback at program termination to finalize the Kokkos library.
 
-\subsection{Addition and Then Removal of Virtual Methods}
+\subsection{Addition and then removal of virtual methods}
 \label{sec:virtual-methods}
 
 %\assign{Ken}
@@ -111,7 +111,7 @@ Therefore, instead of attempting to compile a function for any possible type, it
 The typical solution is to copy the array of an unknown type to an array of a known type.
 This feature was included in the filter interface overhaul, which is described in the next section.
 
-\subsection{Filter Interface Overhaul}
+\subsection{Filter interface overhaul}
 \label{sec:filter-overhaul}
 
 %\assign{Ollie}
@@ -181,7 +181,7 @@ Although this does not necessarily reduce the aggregate compile times, it more e
 %\ollie{Ken can you add some concrete timing measure as you did before here?}
 %\ken{I will look. I probably don't have anything concrete. I'm not sure I captured enough data to measure the time before the filter change and the time after. (A lot changed in the interim anyway.) But I think I can pull up a couple of examples.}
 
-\subsection{GPU-to-GPU Transfers}
+\subsection{GPU-to-GPU transfers}
 
 Modern GPUs used in HPC can perform direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to send data stored in their device memory directly to another GPU's device memory. This contrasts with the traditional and costly GPU communication pattern that required first copying the desired data from the first GPU's device memory to the system's host memory and then copying the data again from the host memory to the second GPU's device memory.
 
