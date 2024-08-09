@@ -101,7 +101,7 @@ At run time, the proper type can be queried and extracted.
 Although multiplexing from a variant object still requires separate compilation for all possible types, it limits the code that must be recompiled to make it more manageable.
 
 The second strategy required a redesign of the array management in \vtkm.
-Where the original design of array management completely abstracted the implementation, the new design based the array management on raw buffers of memory that internally be reinterpreted as C arrays to implement different array types.
+Where the original design of array management completely abstracted the implementation, the new design based the array management on raw buffers of memory that internally can be reinterpreted as C arrays to implement different array types.
 This in turn provided a way to generalize the representation of an array component by defining a stride in the buffer.
 In this way, an algorithm no longer had to be compiled for a specific data layout.
 It could instead apply a stride to the array and use any layout.
@@ -183,7 +183,7 @@ Although this does not necessarily reduce the aggregate compile times, it more e
 
 \subsection{GPU-to-GPU Transfers}
 
-Modern GPUs used in HPC can perform direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to send data stored in their device memory directly to another GPU's device memory. This contrasts the traditional and costly GPU communication pattern that required first copying the desired data from the first GPU's device memory to the system's host memory and then copying the data again from the host memory to the second GPU's device memory.
+Modern GPUs used in HPC can perform direct GPU-to-GPU communication. This provides GPUs with an efficient mechanism to send data stored in their device memory directly to another GPU's device memory. This contrasts with the traditional and costly GPU communication pattern that required first copying the desired data from the first GPU's device memory to the system's host memory and then copying the data again from the host memory to the second GPU's device memory.
 
 Enabling this feature in \vtkm required changes in the source code of both \vtkm itself and DIY, which is a third-party library that \vtkm uses to manage its MPI (Message Passing Interface) communication~\citep{Peterka2011,Morozov2016}.
 %The reason for making changes to DIY is that \vtkm delegates data marshaling and remote communication through the DIY library.
