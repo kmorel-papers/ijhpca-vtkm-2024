@@ -189,7 +189,7 @@ Enabling this feature in \vtkm required changes in the source code of both \vtkm
 %The reason for making changes to DIY is that \vtkm delegates data marshaling and remote communication through the DIY library.
 
 The DIY library changes consisted of adding routines that allow sending and receiving raw pointers directly and encapsulated in a newly introduced ``blob'' data type, which is roughly equivalent to the raw data buffers previously described for \vtkm's array management.
-This contrasts the regular operation of DIY, which usually copies and serializes data before sending and receiving.
+This contrasts with the regular operation of DIY, which usually copies and serializes data before sending and receiving.
 Additionally, we introduced a new API in DIY to control the ownership of the passed raw pointer.
 
 The corresponding \vtkm changes consisted of modifying the \vtkm class that manages memory buffers and their location among host and devices.
